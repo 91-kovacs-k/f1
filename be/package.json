@@ -1,0 +1,22 @@
+{
+  "name": "f1-be",
+  "version": "1.0.0",
+  "description": "backend for f1 app",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/91-kovacs-k/f1.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/91-kovacs-k/f1/issues"
+  },
+  "homepage": "https://github.com/91-kovacs-k/f1#readme",
+  "dependencies": {
+    "express": "^4.18.1"
+  }
+}
