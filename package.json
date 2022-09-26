@@ -1,11 +1,11 @@
 {
-  "name": "f1-be",
+  "name": "f1",
   "version": "1.0.0",
-  "description": "backend for f1 app",
-  "main": "app.js",
+  "description": "f1 exercise app",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js"
+    "be": "cd be & npm start",
+    "fe": "cd fe & npm start"
   },
   "repository": {
     "type": "git",
@@ -16,8 +16,5 @@
   "bugs": {
     "url": "https://github.com/91-kovacs-k/f1/issues"
   },
-  "homepage": "https://github.com/91-kovacs-k/f1#readme",
-  "dependencies": {
-    "express": "^4.18.1"
-  }
+  "homepage": "https://github.com/91-kovacs-k/f1#readme"
 }
