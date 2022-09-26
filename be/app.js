@@ -1,13 +1,23 @@
 import express from 'express'
 import bodyParser from 'body-parser'
+import cors from 'cors'
 
 const app = express()
 
+app.use(cors())
 app.use(bodyParser.json())
+
+const teams = 
+[
+    { id: 1, name: 'ferrari' },
+    { id: 2, name: 'mercedes' },
+    { id: 3, name: 'red bull' },
+    { id: 4, name: 'mclaren' }
+]
 
 app.route('/api/team')
     .get((req, res) => {
-        res.send({ data: ['ferrari', 'mercedes', 'red bull', 'mclaren'] })
+        res.send({ data: teams})
     })
     .post((req, res) => {
         console.log(req.body)
@@ -18,17 +28,17 @@ app.route('/api/team/:id')
     .get((req, res) => {
         const id = req.params.id
         const team = selectTeam(id)
-        if(team === 'not found'){
+        if(team.id === 0){
             return res.status(404).end()
         }
 
-        return res.status(200).send({ data: team })
+        return res.status(200).send(team)
     })
     .put((req, res) => {
         const id = req.params.id
         const team = selectTeam(id)
 
-        if(team === 'not found'){
+        if(team.id === 0){
             return res.status(404).end()
         }
 
@@ -38,35 +48,23 @@ app.route('/api/team/:id')
         const id = req.params.id
         const team = selectTeam(id)
 
-        if(team === 'not found'){
+        if(team.id === 0){
             return res.status(404).end()
         }
 
-        return res.status(200).send({ data: `${team} was deleted.` })
+        return res.status(200).send({ data: `${team.name} was deleted.` })
     })
 
 function selectTeam(id){
-    let team = '';
     const teamId = Number(id)
+    let selectedTeam = ''
+    teams.forEach(team => team.id === teamId ? selectedTeam = team : "")
 
-    switch(teamId){
-        case 1:
-            team = 'ferrari'
-            break
-        case 2:
-            team = 'mercedes'
-            break
-        case 3:
-            team = 'red bull'
-            break
-        case 4:
-            team = 'mclaren'
-            break
-        default:
-            team = 'not found'
-            break
+    if(!selectedTeam){
+        selectedTeam = { id: 0, name: 'not found' }
     }
-    return team;
+
+    return selectedTeam;
 }
 
 app.listen(4000, () => {
