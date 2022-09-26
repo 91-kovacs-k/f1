@@ -1,71 +1,95 @@
 import express from 'express'
 import bodyParser from 'body-parser'
 import cors from 'cors'
+import mongodb from 'mongodb'
+import teamRepo from './repos/teamRepo.js'
 
 const app = express()
+const MongoClient = mongodb.MongoClient;
+const url = 'mongodb://localhost:27017'
+const dbName = 'f1'
+// const teams = 
+// [
+//     { id: 1, name: 'ferrari' },
+//     { id: 2, name: 'mercedes' },
+//     { id: 3, name: 'red bull' },
+//     { id: 4, name: 'mclaren' }
+// ]
+
+async function main(){
+    const client = new MongoClient(url)
+    await client.connect()
+    // const results = await teamRepo.loadData(JSON.parse(JSON.stringify(teams)))
+    const admin = client.db(dbName).admin()
+    //await client.db(dbName).dropDatabase()
+    //console.log(await admin.serverStatus())
+    //console.log(await admin.listDatabases())
+    client.close()
+}
+main()
 
 app.use(cors())
 app.use(bodyParser.json())
 
-const teams = 
-[
-    { id: 1, name: 'ferrari' },
-    { id: 2, name: 'mercedes' },
-    { id: 3, name: 'red bull' },
-    { id: 4, name: 'mclaren' }
-]
-
 app.route('/api/team')
-    .get((req, res) => {
-        res.send({ data: teams})
+    .get(async (req, res) => {
+        const data = await teamRepo.get()
+        res.send(data)
     })
-    .post((req, res) => {
-        console.log(req.body)
-        res.send(req.body)
+    .post(async (req, res) => {
+        let data = ""
+        try {
+            data = await teamRepo.insert(req.body)
+        } catch (error) {
+            if(error === `${req.body.name} already exists in database`){
+                return res.status(500).send({ error: error }) 
+            }
+            if(error === `a team with the id of ${req.body.id} already exists in database`){
+                return res.status(500).send({ error: error }) 
+            }
+            return res.send(error)
+        }
+        res.send(data)
     })
 
 app.route('/api/team/:id')
-    .get((req, res) => {
+    .get(async (req, res) => {
         const id = req.params.id
-        const team = selectTeam(id)
-        if(team.id === 0){
+        const data = await teamRepo.getById(id)
+        if(!data){
             return res.status(404).end()
         }
 
-        return res.status(200).send(team)
+        return res.status(200).send(data)
     })
-    .put((req, res) => {
+    .put(async (req, res) => {
         const id = req.params.id
-        const team = selectTeam(id)
-
-        if(team.id === 0){
-            return res.status(404).end()
+        const updatedTeam = req.body
+        if(id != updatedTeam.id){
+            return res.status(500).send({ error: "the id in url endpoint and request body does not match" })
+        }
+        let data = ""
+        try {
+            data = await teamRepo.update(id, updatedTeam)
+        } catch (error) {
+            return res.send(error)
         }
 
-        return res.status(200).send(req.body)
+        return res.send(data)
     })
-    .delete((req, res) => {
+    .delete(async (req, res) => {
         const id = req.params.id
-        const team = selectTeam(id)
-
-        if(team.id === 0){
-            return res.status(404).end()
+        let data = ""
+        try {
+            data = await teamRepo.remove(id)
+        } catch (error) {
+            if(error === `team with ${id} not exists in database`){
+                return res.status(404).end() 
+            }
+            return res.send(error)
         }
-
-        return res.status(200).send({ data: `${team.name} was deleted.` })
+        res.send(data)
     })
-
-function selectTeam(id){
-    const teamId = Number(id)
-    let selectedTeam = ''
-    teams.forEach(team => team.id === teamId ? selectedTeam = team : "")
-
-    if(!selectedTeam){
-        selectedTeam = { id: 0, name: 'not found' }
-    }
-
-    return selectedTeam;
-}
 
 app.listen(4000, () => {
     console.log('--->BE listening on port 4000.')
