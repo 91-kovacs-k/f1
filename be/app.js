@@ -16,38 +16,47 @@ const dbName = 'f1'
 //     { id: 4, name: 'mclaren' }
 // ]
 
-async function main(){
-    const client = new MongoClient(url)
-    await client.connect()
-    // const results = await teamRepo.loadData(JSON.parse(JSON.stringify(teams)))
-    const admin = client.db(dbName).admin()
-    //await client.db(dbName).dropDatabase()
-    //console.log(await admin.serverStatus())
-    //console.log(await admin.listDatabases())
-    client.close()
-}
-main()
+// async function main(){
+//     const client = new MongoClient(url)
+//     await client.connect()
+//     const results = await teamRepo.loadData(JSON.parse(JSON.stringify(teams)))
+//     const admin = client.db(dbName).admin()
+//     // await client.db(dbName).dropDatabase()
+//     //console.log(await admin.serverStatus())
+//     //console.log(await admin.listDatabases())
+//     client.close()
+// }
+// main()
 
 app.use(cors())
 app.use(bodyParser.json())
 
 app.route('/api/team')
     .get(async (req, res) => {
-        const data = await teamRepo.get()
-        res.send(data)
+        try {
+            const data = await teamRepo.get()
+            return res.send(data)
+        } catch (error) {
+            return res.status(500).send({error: error})
+        }
     })
     .post(async (req, res) => {
+        if(req.body.type === 'search'){
+            try {
+                const data = await teamRepo.get(req.body.name, req.body.limit) 
+                return res.send(data)
+            } catch (error) { 
+                if(error === `there is no match to search term of '${req.body.name.toLowerCase()}'`)
+                    return res.status(404).send({error: error})
+                return res.status(500).send({error: error})
+            }
+        }
+
         let data = ""
         try {
             data = await teamRepo.insert(req.body)
         } catch (error) {
-            if(error === `${req.body.name} already exists in database`){
-                return res.status(500).send({ error: error }) 
-            }
-            if(error === `a team with the id of ${req.body.id} already exists in database`){
-                return res.status(500).send({ error: error }) 
-            }
-            return res.send(error)
+            return res.status(500).send({ error: error })
         }
         res.send(data)
     })
@@ -59,7 +68,6 @@ app.route('/api/team/:id')
         if(!data){
             return res.status(404).end()
         }
-
         return res.status(200).send(data)
     })
     .put(async (req, res) => {
@@ -68,11 +76,12 @@ app.route('/api/team/:id')
         if(id != updatedTeam.id){
             return res.status(500).send({ error: "the id in url endpoint and request body does not match" })
         }
+
         let data = ""
         try {
             data = await teamRepo.update(id, updatedTeam)
         } catch (error) {
-            return res.send(error)
+            return res.status(500).send({error: error})
         }
 
         return res.send(data)
@@ -86,7 +95,7 @@ app.route('/api/team/:id')
             if(error === `team with ${id} not exists in database`){
                 return res.status(404).end() 
             }
-            return res.send(error)
+            return res.status(500).send({error: error})
         }
         res.send(data)
     })

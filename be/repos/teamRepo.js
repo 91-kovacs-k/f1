@@ -27,14 +27,24 @@ function teamRepo(){
             try {
                 await client.connect()
                 const db = client.db(dbName)
-
-                let items = db.collection('teams').find(query)
+                let items;
+                if(query){
+                    items = db.collection('teams').find({name: {$regex: query, $options: 'i'}})
+                }else{
+                    items = db.collection('teams').find()
+                }
 
                 if(limit > 0){
                     items = items.limit(limit)
                 }
 
-                resolve(await items.toArray())
+                const ret = await items.toArray()                
+
+                if(ret.length === 0){
+                    reject(`there is no match for search term of ${query}`)
+                }
+
+                resolve(ret)
                 client.close()
             } catch (error) {
                 reject(error)
@@ -65,6 +75,10 @@ function teamRepo(){
             try {
                 await client.connect()
                 const db = client.db(dbName)
+                let teamExists = await db.collection('teams').findOne({name : {$regex: team.name, $options: 'i'}})
+                if(teamExists){
+                    return reject(`team with the name of ${team.name.toLowerCase()} already exists in database`)
+                }
                 const teamFromDb = await db.collection('teams').findOneAndReplace({id: Number(id)}, team)
                 if(!teamFromDb){
                     return reject(`team with ${id} not exists in database`)
@@ -84,9 +98,9 @@ function teamRepo(){
             try {
                 await client.connect()
                 const db = client.db(dbName)
-                let teamFromDb = await db.collection('teams').findOne({name: team.name})
+                let teamFromDb = await db.collection('teams').findOne({name: {$regex: team.name, $options: 'i'}})
                 if(teamFromDb){
-                    return reject(`${team.name} already exists in database`)
+                    return reject(`${team.name.toLowerCase()} already exists in database`)
                 }
                 teamFromDb = await db.collection('teams').findOne({id: Number(team.id)})
                 if(teamFromDb){
