@@ -76,7 +76,8 @@ function teamRepo(){
                 await client.connect()
                 const db = client.db(dbName)
                 let teamExists = await db.collection('teams').findOne({name : {$regex: team.name, $options: 'i'}})
-                if(teamExists){
+                
+                if(teamExists && teamExists.id != id){
                     return reject(`team with the name of ${team.name.toLowerCase()} already exists in database`)
                 }
                 const teamFromDb = await db.collection('teams').findOneAndReplace({id: Number(id)}, team)
@@ -106,8 +107,15 @@ function teamRepo(){
                 if(teamFromDb){
                     return reject(`a team with the id of ${team.id} already exists in database`)
                 }
-
-                let results = await db.collection('teams').insertOne(team)
+                
+                const lastTeam = await db.collection('teams').find().sort({id:-1}).limit(1)
+                const lastId = (await lastTeam.toArray())[0].id
+                let newId = 1
+                if(lastId){
+                    newId = lastId + 1
+                }
+                const teamWithId = { id: newId, ...team}
+                let results = await db.collection('teams').insertOne(teamWithId)
                 resolve(results)
                 
                 client.close()
