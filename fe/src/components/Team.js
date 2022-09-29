@@ -1,10 +1,12 @@
-import React from "react";
+import React from 'react';
+import Update from './Update'
 
-export default function Team() {
+export default function Team(params) {
     const [teams, setTeams] = React.useState([]);
     const [formData, setFormData] = React.useState({
         teamSearch: ""
     });
+    const [update, setUpdate] = React.useState()
 
     React.useEffect(() => {
         getTeams()
@@ -86,11 +88,7 @@ export default function Team() {
             }
         )
     }
-
-    function updateTeam(id){
-
-    }
-
+    
     async function deleteTeam(id){
         const response = await fetch(`http://localhost:4000/api/team/${id}`,
                 {
@@ -115,6 +113,10 @@ export default function Team() {
             }
     }
 
+    function toggleUpdate(team){
+        setUpdate(team)
+    }
+
     function changeHandler(event) {
         const { name, value } = event.target
 
@@ -124,25 +126,38 @@ export default function Team() {
         }))
     }
 
+    function renderUpdate(){
+        return <Update team={update} />
+    }
+
+    function renderTeams(){
+        return (
+            <>
+                <ul> {teamElements} </ul>
+                <form>
+                    <input
+                        type="text"
+                        name="teamSearch"
+                        id="teamSearch"
+                        value={formData.teamSearch}
+                        placeholder="Team ID or Name"
+                        onChange={changeHandler}
+                    />
+                    <button onClick={getTeam}>Get team</button>
+                </form>
+            </>
+        )
+    }
+
     const teamElements = teams.map(team => <div className="teamItem">
         <li key={team.id}>{team.name}</li>
-        <button onClick={() => updateTeam(team.id)}>update</button>
+        <button onClick={() => toggleUpdate(team)}>update</button>
         <button onClick={() => deleteTeam(team.id)}>delete</button>
     </div>)
+    
     return (
         <div className="team">
-            {teams && <ul> {teamElements} </ul>}
-            <form>
-                <input
-                    type="text"
-                    name="teamSearch"
-                    id="teamSearch"
-                    value={formData.teamSearch}
-                    placeholder="Team ID or Name"
-                    onChange={changeHandler}
-                />
-                <button onClick={getTeam}>Get team</button>
-            </form>
+            {update ? renderUpdate() : (teams && renderTeams()) }
         </div>
     );
 }

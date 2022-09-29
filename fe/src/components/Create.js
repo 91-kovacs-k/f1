@@ -24,7 +24,6 @@ export default function Create(){
             body: JSON.stringify({name: formData.teamName})
         });
         if (!response.ok) {
-            console.log(response)
             throw new Error(`HTTP error! status: ${response.error}`);
         }
 
