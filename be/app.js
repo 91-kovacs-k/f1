@@ -37,6 +37,9 @@ app.route('/api/team')
             const data = await teamRepo.get()
             return res.send(data)
         } catch (error) {
+            if(error === 'no team in database'){
+                return res.status(404).send({error: error})
+            }
             return res.status(500).send({error: error})
         }
     })
@@ -66,7 +69,7 @@ app.route('/api/team/:id')
         const id = req.params.id
         const data = await teamRepo.getById(id)
         if(!data){
-            return res.status(404).end()
+            return res.status(404).send({error: `no team with id of ${id}`})
         }
         return res.status(200).send(data)
     })
@@ -74,13 +77,16 @@ app.route('/api/team/:id')
         const id = req.params.id
         const updatedTeam = req.body
         if(id != updatedTeam.id){
-            return res.status(500).send({ error: "the id in url endpoint and request body does not match" })
+            return res.status(400).send({ error: "the id in url endpoint and request body does not match" })
         }
 
         let data = ""
         try {
             data = await teamRepo.update(id, updatedTeam)
         } catch (error) {
+            if(error === `team with ${id} not exists in database`){
+                return res.status(404).send({error: error})
+            }
             return res.status(500).send({error: error})
         }
 

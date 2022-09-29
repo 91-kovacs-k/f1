@@ -40,8 +40,10 @@ function teamRepo(){
 
                 const ret = await items.toArray()                
 
-                if(ret.length === 0){
+                if(ret.length === 0 && query){
                     reject(`there is no match to search term of '${query.toLowerCase()}'`)
+                }else if(ret.length === 0 && !query){
+                    reject('no team in database')
                 }
 
                 resolve(ret)

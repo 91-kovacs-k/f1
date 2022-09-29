@@ -1,0 +1,267 @@
+openapi: 3.0.3
+info:
+  title: F1 web app - OpenAPI 3.0
+  description: |-
+    This is an F1 web application based on the OpenAPI 3.0 specification.  You can find out more about
+    Swagger at [https://swagger.io](https://swagger.io).
+  contact:
+    name: Krisztian Kovacs
+    email: krisztian2.kovacs.ext@siemens-healthineers.com
+  version: 1.0.0
+servers:
+  - url: http://localhost:4000
+tags:
+  - name: Team
+    description: Operations for Teams
+  - name: Pilot
+    description: Operations for Pilots
+paths:
+  /api/team/:
+    description: Team Resource
+    get:
+      tags:
+        - Team
+      description: Operation to Fetch Teams
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamArray'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: no team in database
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: <some internal error>
+    post:
+      tags:
+        - Team
+      summary: Add a new Team to the database
+      description: Add a new Team to the database
+      requestBody:
+        description: Create a new Team in the database
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Alfa Romeo
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  acknowledged:
+                    type: boolean
+                    example: true
+                  insertedId:
+                    type: string
+                    example: 6334337127432511d92ab41c
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                 error:
+                  type: string
+                  example: <team name> already exists in database
+  /api/team/{id}:
+    put:
+      tags:
+        - Team
+      summary: Update an existing team
+      description: Update an existing team by Id
+      operationId: updateTeam
+      parameters:
+       - in: path
+         name: id
+         required: true
+         schema:
+            type: integer
+      requestBody:
+        description: Update an existent Team in the database
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                name:
+                  type: string
+                  example: Ferrari
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '400':
+          description: The id in url endpoint and request body does not match
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: the id in url endpoint and request body does not match
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: team with <id> does not exist in database
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: team with the name of <team name> already exists in database
+    get:
+      tags:
+        - Team
+      summary: Finds Team by id
+      description: Find a Team by id
+      parameters:
+       - in: path
+         name: id
+         required: true
+         schema:
+            type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/Team'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: no team with id of <id>
+    delete:
+      tags:
+        - Team
+      summary: Deletes a Team by id
+      description: Deletes a Team by id
+      parameters:
+       - in: path
+         name: id
+         required: true
+         schema:
+            type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  acknowledged:
+                    type: boolean
+                    example: true
+                  deletedCount:
+                    type: integer
+                    example: 1
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: no team with id of <id>
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: <some internal error>
+components:
+  schemas:
+    Pilot:
+      required:
+        - name
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 100000
+        name:
+          type: string
+          example: Sebastian Vettel
+    Team:
+      required:
+        - name
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 6332f3890f3423161d1c528e
+        id:
+          type: integer
+          format: int64
+          example: 10
+        name:
+          type: string
+          example: Red Bull
+    PilotArray:
+      description: List of Pilot objects
+      type: array
+      items:
+        $ref: '#/components/schemas/Pilot'
+    TeamArray:
+      description: List of Team objects
+      type: array
+      items:
+        $ref: '#/components/schemas/Team'
