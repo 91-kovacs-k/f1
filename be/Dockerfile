@@ -1,0 +1,15 @@
+FROM node:latest
+
+LABEL author="Krisztián Kovács"
+
+ENV NODE_ENV=production
+ENV PORT=4000
+
+COPY . /var/www
+WORKDIR /var/www
+
+RUN npm install
+
+EXPOSE $PORT
+
+ENTRYPOINT [ "npm", "start" ]
