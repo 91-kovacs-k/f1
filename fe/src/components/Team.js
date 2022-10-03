@@ -106,7 +106,7 @@ export default function Team(params) {
             }
 
             const data = await response.json();
-            if(data.deletedCount === 1){
+            if(data.rowsAffected[0] === 1){
                 await getTeams()
             }else{
                 throw new Error(`Error while deleting: ${data}`)

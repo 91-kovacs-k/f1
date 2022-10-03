@@ -23,15 +23,13 @@ export default function Create(){
             },
             body: JSON.stringify({name: formData.teamName})
         });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.error}`);
-        }
 
         const data = await response.json();
-        if(data.acknowledged){
+        if(data.rowsAffected){
             setRes(`${formData.teamName} successfully created.`)
         }else{
-            setRes(`Error while creating team: ${response.status}`)
+            setRes(`Error while creating team: ${data.error}`)
+            throw new Error(`Error while deleting: ${data}`)
         }
         setFormData({
             teamName: ""
