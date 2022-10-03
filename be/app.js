@@ -1,13 +1,13 @@
 import express from 'express'
 import bodyParser from 'body-parser'
 import cors from 'cors'
-import mongodb from 'mongodb'
+// import mongodb from 'mongodb'
 import teamRepo from './repos/teamRepo.js'
 
 const app = express()
-const MongoClient = mongodb.MongoClient;
-const url = 'mongodb://localhost:27017'
-const dbName = 'f1'
+// const MongoClient = mongodb.MongoClient;
+// const url = 'mongodb://localhost:27017'
+// const dbName = 'f1'
 // const teams = 
 // [
 //     { id: 1, name: 'ferrari' },
@@ -84,7 +84,7 @@ app.route('/api/team/:id')
         try {
             data = await teamRepo.update(id, updatedTeam)
         } catch (error) {
-            if(error === `team with ${id} not exists in database`){
+            if(error === `team with id of ${id} not exists in database`){
                 return res.status(404).send({error: error})
             }
             return res.status(500).send({error: error})
