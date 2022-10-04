@@ -4,7 +4,8 @@ import sql from 'mssql'
 
 function teamRepo(){
     const config = {
-        server: "localhost",
+        //server: "localhost",
+        server: "mssql",
         port: 1433,
         user: "SA",
         password: "notPassword123",
