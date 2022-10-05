@@ -1,0 +1,47 @@
+version: '2'
+
+services:
+
+  f1-be:
+    image: 91kovacsk/f1-be
+    container_name: f1-be-cont
+    build:
+      context: ./be
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    networks:
+      - f1-net
+
+  f1-fe:
+    image: 91kovacsk/f1-fe
+    container_name: f1-fe-cont
+    build:
+      context: ./fe
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - f1-net
+
+  mssql:
+    image: 91kovacsk/f1-mssql
+    container_name: f1-mssql
+    build:
+      context: ./data
+      dockerfile: Dockerfile
+    ports:
+      - "1433:1433"
+    volumes:
+      - C:/data/MSSQL/data:/var/opt/mssql/data
+      - C:/data/MSSQL/log:/var/opt/mssql/log
+      - C:/data/MSSQL/secrets:/var/opt/mssql/secrets
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=notPass123
+    networks:
+      - f1-net
+
+networks:
+  f1-net:
+    driver: bridge

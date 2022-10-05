@@ -4,11 +4,11 @@ import sql from 'mssql'
 
 function teamRepo(){
     const config = {
-        //server: "localhost",
-        server: "mssql",
-        port: 1433,
+        //server: "localhost",          // local build (npm start)
+        server: "f1-mssql",             // docker images by hand (cli) or docker-compose
+        port: 1433,                     
         user: "SA",
-        password: "notPassword123",
+        password: "notPassword123", 
         database: "F1",
         options: {
             enableArithAbort: true,
@@ -127,10 +127,11 @@ function teamRepo(){
                 
                 const lastId = await pool.request().query(`SELECT * FROM team where id = (select MAX(ID) from team)`)
                 let newId = 1
-                if(lastId.recordset[0].id){
+     
+                if(lastId.rowsAffected[0] !== 0){
                     newId = lastId.recordset[0].id + 1
                 }
-                const results = await pool.request().query(`insert into team (id, name) values (${newId}, '${team.name}')`)
+                const results = await pool.request().query(`insert into team (name) values ('${team.name}')`)
                 resolve(results)
                 
                 sql.close()
