@@ -12,4 +12,4 @@ RUN npm install
 
 EXPOSE $PORT
 
-ENTRYPOINT [ "npm", "start" ]
+ENTRYPOINT [ "npm", "run", "start-from-docker" ]
