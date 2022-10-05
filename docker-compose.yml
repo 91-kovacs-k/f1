@@ -38,7 +38,7 @@ services:
       - C:/data/MSSQL/secrets:/var/opt/mssql/secrets
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=notPass123
+      - SA_PASSWORD=notPassword123
     networks:
       - f1-net
 
