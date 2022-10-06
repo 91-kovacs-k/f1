@@ -11,7 +11,7 @@ app.use(bodyParser.json())
 app.route('/api/team')
     .get(async (req, res) => {
         try {
-            const data = await teamRepo.get(null, null)
+            const data = await teamRepo.get()
             return res.send(data)
         } catch (error) {
             if(error === 'no team in database'){

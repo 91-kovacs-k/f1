@@ -19,8 +19,10 @@ function teamRepo(){
             idleTimeoutMillis: 30000
         }
     }
-    // sql.on('error', err => console.log(err.message))
-    // sql.on('connect', function(err) {
+
+    // const pool = await sql.connect(config)
+    // pool.on('error', err => console.log(err.message))
+    // pool.on('connect', function(err) {
     //         // If no error, then good to proceed.
     //         console.log("--->Connected to MS SQL");
     // })
@@ -32,14 +34,14 @@ function teamRepo(){
     //             const results
     //             // TODO insert data into db
     //             resolve(results)
-    //             sql.close()
+    //             pool.close()
     //         } catch (error) {
     //             reject(error)
     //         }
     //     })
     // }
 
-    function get(query : string, limit : number){
+    function get(query? : string, limit? : number){
         return new Promise(async (resolve, reject) => {
             try {
                 const pool = await sql.connect(config)
@@ -65,7 +67,7 @@ function teamRepo(){
                 }
 
                 resolve(ret)
-                // sql.close()
+                pool.close()
             } catch (error) {
                 reject(error)
             }
@@ -83,7 +85,7 @@ function teamRepo(){
                 const item = result.recordset[0]
 
                 resolve(item)
-                // sql.close()
+                pool.close()
             } catch (error) {
                 reject(error)
             }
@@ -106,7 +108,7 @@ function teamRepo(){
                     return reject(`team with id of ${id} not exists in database`)
                 }
                 resolve(teamFromDb)
-                // sql.close()
+                pool.close()
             } catch (error) {
                 reject(error)
             }
@@ -132,7 +134,7 @@ function teamRepo(){
                 const results = await pool.request().query(`insert into team (name) values ('${team.name}')`)
                 resolve(results)
 
-                // sql.close()
+                pool.close()
             } catch (error) {
                 reject(error)
             }
@@ -152,7 +154,7 @@ function teamRepo(){
                 const ret = await pool.request().query(`delete from team where id = ${id}`)
                 resolve(ret)
 
-                // sql.close()
+                pool.close()
             } catch (error) {
                 reject(error)
             }
