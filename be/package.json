@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "description": "backend for f1 app",
   "main": "dist/app.js",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
     "build": "tsc",
     "prestart": "npm run build",
-    "start": "node --es-module-specifier-resolution=node .",
+    "start": "node .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start-from-docker": "node --es-module-specifier-resolution=node ."
+    "start-from-docker": "node ."
   },
   "repository": {
     "type": "git",

@@ -1,9 +1,11 @@
+import { Pilot } from '../entity/Pilot'
 import { Team } from '../entity/Team'
 import { AppDataSource } from '../data-source'
 import { Like } from 'typeorm'
+import teamRepo from './teamRepo'
 
-function teamRepo(){
-    const repo = AppDataSource.getRepository(Team)
+function pilotRepo(){
+    const repo = AppDataSource.getRepository(Pilot)
 
     function get(query? : string, limit? : number){
         return new Promise(async (resolve, reject) => {
@@ -24,7 +26,7 @@ function teamRepo(){
                 if(ret.length === 0 && query){
                     reject(`there is no match to search term of '${query.toLowerCase()}'`)
                 }else if(ret.length === 0 && !query){
-                    reject('no team in database')
+                    reject('no pilot in database')
                 }
 
                 resolve(ret)
@@ -34,7 +36,7 @@ function teamRepo(){
         })
     }
 
-    function getById(id : number){
+    function getById(id: number){
         return new Promise(async (resolve, reject) => {
             try {
                 const item = await repo.findOneByOrFail({ id })
@@ -45,40 +47,18 @@ function teamRepo(){
         })
     }
 
-    function update(id : number, team : Team){
+    function insert(pilot: Pilot, team?: Team){
         return new Promise(async (resolve, reject) => {
             try {
-                const teamExists = await repo.findOneBy({name: Like(`%${team.name}%`)})
-
-                if(teamExists && teamExists.id !== id){
-                    return reject(`team with the name of ${team.name.toLowerCase()} already exists in database`)
-                }
-                const idExists = await repo.findOneBy({ id })
-                if(!idExists){
-                    return reject(`team with id of ${id} not exists in database`)
+                const pilotFromDb = await repo.findOneBy({name: Like(`%${pilot.name}%`)})
+                if(pilotFromDb){
+                    return reject(`${pilot.name.toLowerCase()} already exists in database`)
                 }
 
-                idExists.name = team.name
-                await repo.save(idExists)
-                resolve(idExists)
-            } catch (error) {
-                reject(error)
-            }
-        })
-    }
-
-    function insert(team : Team){
-        return new Promise(async (resolve, reject) => {
-            try {
-                const teamFromDb = await repo.findOneBy({name: Like(`%${team.name}%`)})
-                if(teamFromDb){
-                    return reject(`${team.name.toLowerCase()} already exists in database`)
-                }
-
-                if(team.id){
+                if(pilot.id){
                     return reject(`do not specify id for insert!`)
                 }
-                const ret = await repo.save(team)
+                const ret = await repo.save(pilot)
                 resolve(ret)
             } catch (error) {
                 reject(error)
@@ -89,13 +69,35 @@ function teamRepo(){
     function remove(id : number){
         return new Promise(async (resolve, reject) => {
             try {
-                const team = await repo.findOneBy({ id })
-                if(!team){
-                    return reject(`team with ${id} not exists in database`)
+                const pilot = await repo.findOneBy({ id })
+                if(!pilot){
+                    return reject(`pilot with ${id} not exists in database`)
                 }
 
-                const ret = await repo.remove(team)
+                const ret = await repo.remove(pilot)
                 resolve(ret)
+            } catch (error) {
+                reject(error)
+            }
+        })
+    }
+
+    function update(id : number, pilot : Pilot){
+        return new Promise(async (resolve, reject) => {
+            try {
+                const pilotExists = await repo.findOneBy({name: Like(`%${pilot.name}%`)})
+
+                if(pilotExists && pilotExists.id !== id){
+                    return reject(`pilot with the name of ${pilot.name.toLowerCase()} already exists in database`)
+                }
+                const idExists = await repo.findOneBy({ id })
+                if(!idExists){
+                    return reject(`pilot with id of ${id} not exists in database`)
+                }
+
+                idExists.name = pilot.name
+                await repo.save(idExists)
+                resolve(idExists)
             } catch (error) {
                 reject(error)
             }
@@ -105,5 +107,4 @@ function teamRepo(){
     return { get, getById, insert, remove, update }
 }
 
-
-export default teamRepo()
+export default pilotRepo()
