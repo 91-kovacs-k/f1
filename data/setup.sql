@@ -4,8 +4,8 @@ GO
 USE F1;
 GO
 
-CREATE TABLE Team
-(
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    name NVARCHAR(MAX) NOT NULL
-)
+-- CREATE TABLE Team
+-- (
+--     id INT IDENTITY(1,1) PRIMARY KEY,
+--     name NVARCHAR(MAX) NOT NULL
+-- )

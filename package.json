@@ -5,22 +5,22 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
 
-    "init": "cd C:\\ & mkdir data\\MSSQL & cd data\\MSSQL & mkdir data log secrets",
-    "clear-init": "cd C:\\data\\MSSQL & rmdir /s data log secrets",
+    "init": "cd .. & mkdir f1-data\\MSSQL & cd f1-data\\MSSQL & mkdir data log secrets",
+    "clear-init": "cd .. & rmdir /s f1-data",
 
-    "start": "docker-compose up -d",
+    "start": "cd be & npm run build & cd.. & docker-compose up -d",
     "stop": "docker-compose down",
 
     "create-docker-network": "docker network create --driver bridge f1-net",
 
     "mssql-build-docker": "cd data & docker build -t 91kovacsk/f1-mssql .", 
-    "mssql-run-docker": "docker run --net=f1-net --name f1-mssql -e \"ACCEPT_EULA=Y\" -e \"MSSQL_SA_PASSWORD=notPass123\" -p 1433:1433 -v C:/data/MSSQL/data:/var/opt/mssql/data -v C:/data/MSSQL/log:/var/opt/mssql/log -v C:/data/MSSQL/secrets:/var/opt/mssql/secrets -d 91kovacsk/f1-mssql",
+    "mssql-run-docker": "docker run --net=f1-net --name f1-mssql -e \"ACCEPT_EULA=Y\" -e \"MSSQL_SA_PASSWORD=notPass123\" -p 1433:1433 -v ../f1-data/MSSQL/data:/var/opt/mssql/data -v ../f1-data/MSSQL/log:/var/opt/mssql/log -v ../f1-data/MSSQL/secrets:/var/opt/mssql/secrets -d 91kovacsk/f1-mssql",
     "mssql-run": "npm run mssql-build-docker & npm run mssql-run-docker",
     "mssql-stop-docker": "docker rm -f f1-mssql & docker rmi f1-mssql",
 
     "be-build-docker": "cd be & docker build -t 91kovacsk/f1-be .",
     "be-run-docker": "docker run -p 4000:4000 --net=f1-net --name f1-be-cont -d 91kovacsk/f1-be",
-    "be-run": "npm run be-build-docker & npm run be-run-docker",
+    "be-run": "cd be & npm build & cd .. & npm run be-build-docker & npm run be-run-docker",
     "be-stop-docker": "docker rm -f f1-be-cont & docker rmi 91kovacsk/f1-be",
 
     "fe-build-docker": "cd fe & docker build -t 91kovacsk/f1-fe .",
@@ -32,14 +32,14 @@
     "clear-docker-images": "docker rmi 91kovacsk/f1-mssql 91kovacsk/f1-be 91kovacsk/f1-fe",
     "remove-docker-network": "docker network rm f1-net",
 
-    "be": "cd be & npm start",
+    "be": "cd be & tsc & npm start",
     "fe": "cd fe & npm start"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/91-kovacs-k/f1.git"
   },
-  "author": "",
+  "author": "Krisztián Kovács",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/91-kovacs-k/f1/issues"

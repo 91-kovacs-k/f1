@@ -1,63 +1,25 @@
 import sql from 'mssql'
+import { Team } from '../entity/Team'
+import { AppDataSource } from '../data-source'
+import { Like } from 'typeorm'
 
 function teamRepo(){
-    const config = {
-        // server: "localhost",          // local build (npm start)
-        server: "f1-mssql",             // docker images by hand (cli) or docker-compose
-        port: 1433,
-        user: "SA",
-        password: "notPassword123",
-        database: "F1",
-        options: {
-            enableArithAbort: true,
-            trustServerCertificate: true
-        },
-        connectionsTimeout: 150000,
-        pool: {
-            max: 10,
-            min: 0,
-            idleTimeoutMillis: 30000
-        }
-    }
-
-    // const pool = await sql.connect(config)
-    // pool.on('error', err => console.log(err.message))
-    // pool.on('connect', function(err) {
-    //         // If no error, then good to proceed.
-    //         console.log("--->Connected to MS SQL");
-    // })
-
-    // function loadData(data){
-    //     return new Promise(async (resolve, reject) => {
-    //         try {
-    //             const pool = await sql.connect(config)
-    //             const results
-    //             // TODO insert data into db
-    //             resolve(results)
-    //             pool.close()
-    //         } catch (error) {
-    //             reject(error)
-    //         }
-    //     })
-    // }
+    const repo = AppDataSource.getRepository(Team)
 
     function get(query? : string, limit? : number){
         return new Promise(async (resolve, reject) => {
             try {
-                const pool = await sql.connect(config)
                 let items;
                 if(query){
-                    items = await pool
-                    .request()
-                    .query(`select * from team where name like '%${query}%'`)
+                    items = await repo.findBy({name: Like(`%${query}%`)})
                 }else{
-                    items = await pool.request().query(`select * from team`)
+                    items = await repo.find()
                 }
                 let ret = []
                 if(limit > 0){
-                    ret = items.recordset.slice(0, limit)
+                    ret = items.slice(0, limit)
                 }else{
-                    ret = await items.recordset;
+                    ret = items
                 }
 
                 if(ret.length === 0 && query){
@@ -67,7 +29,6 @@ function teamRepo(){
                 }
 
                 resolve(ret)
-                pool.close()
             } catch (error) {
                 reject(error)
             }
@@ -77,64 +38,49 @@ function teamRepo(){
     function getById(id : number){
         return new Promise(async (resolve, reject) => {
             try {
-                const pool = await sql.connect(config)
-                const result = await pool
-                    .request()
-                    .input("id", sql.Int, id)
-                    .query('select * from team where id = @id')
-                const item = result.recordset[0]
-
+                const item = await repo.findOneByOrFail({ id })
                 resolve(item)
-                pool.close()
             } catch (error) {
                 reject(error)
             }
         })
     }
 
-    function update(id : number, team : any){
+    function update(id : number, team : Team){
         return new Promise(async (resolve, reject) => {
             try {
-                const pool = await sql.connect(config)
-                const result = await pool.request().query(`select * from team where name like '${team.name}'`)
-                const teamExists = result.recordset[0]
+                const teamExists = await repo.findOneBy({name: Like(`%${team.name}%`)})
 
                 if(teamExists && teamExists.id !== id){
                     return reject(`team with the name of ${team.name.toLowerCase()} already exists in database`)
                 }
-                const teamFromDb = await pool.request().query(`update team set name = '${team.name}' where id = ${id}`)
-
-                if(teamFromDb?.rowsAffected[0] === 0){
+                const idExists = await repo.findOneBy({ id })
+                if(!idExists){
                     return reject(`team with id of ${id} not exists in database`)
                 }
-                resolve(teamFromDb)
-                pool.close()
+
+                idExists.name = team.name
+                await repo.save(idExists)
+                resolve(idExists)
             } catch (error) {
                 reject(error)
             }
         })
     }
 
-    function insert(team : any){
+    function insert(team : Team){
         return new Promise(async (resolve, reject) => {
             try {
-                const pool = await sql.connect(config)
-                const result = await pool.request().query(`select * from team where name like '${team.name}'`)
-                const teamFromDb = result.recordset[0]
+                const teamFromDb = await repo.findOneBy({name: Like(`%${team.name}%`)})
                 if(teamFromDb){
                     return reject(`${team.name.toLowerCase()} already exists in database`)
                 }
 
-                const lastId = await pool.request().query(`SELECT * FROM team where id = (select MAX(ID) from team)`)
-                let newId = 1
-
-                if(lastId.rowsAffected[0] !== 0){
-                    newId = lastId.recordset[0].id + 1
+                if(team.id){
+                    return reject(`do not specify id for insert!`)
                 }
-                const results = await pool.request().query(`insert into team (name) values ('${team.name}')`)
-                resolve(results)
-
-                pool.close()
+                const ret = await repo.save(team)
+                resolve(ret)
             } catch (error) {
                 reject(error)
             }
@@ -144,17 +90,13 @@ function teamRepo(){
     function remove(id : number){
         return new Promise(async (resolve, reject) => {
             try {
-                const pool = await sql.connect(config)
-                const result = await pool.request().query(`select * from team where id = ${id}`)
-                const team = result.recordset[0]
+                const team = await repo.findOneBy({ id })
                 if(!team){
                     return reject(`team with ${id} not exists in database`)
                 }
 
-                const ret = await pool.request().query(`delete from team where id = ${id}`)
+                const ret = await repo.remove(team)
                 resolve(ret)
-
-                pool.close()
             } catch (error) {
                 reject(error)
             }

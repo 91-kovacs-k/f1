@@ -24,11 +24,16 @@ export default function Update(params) {
             throw new Error(`HTTP error! status: ${response.error}`);
         }
 
-        //const data = await response.json();
-        setRes(`${formData.teamName} successfully updated.`)
-        setFormData({
-            teamName: ""
-        })
+        const data = await response.json();
+        if(data){
+
+            setRes(`${formData.teamName} successfully updated.`)
+            setFormData({
+                teamName: ""
+            })
+        }else{
+            throw new Error(`HTTP error! status: ${response.error}`);
+        }
     }
 
     function changeHandler(event){

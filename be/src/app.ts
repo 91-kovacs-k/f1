@@ -2,11 +2,37 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import cors from 'cors'
 import teamRepo from './repos/teamRepo'
+import "reflect-metadata"
+import { AppDataSource } from './data-source'
+import { Team } from './entity/Team'
 
 const app = express()
 
 app.use(cors())
 app.use(bodyParser.json())
+
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+let initialized = false;
+const initADS = async() => {
+    for (let i = 1; i < 7; i++) {
+        if(initialized){
+            break;
+        }
+        console.log(`--->AppDataSource initialization try #${i}`)
+        AppDataSource.initialize()
+            .then(() => {
+                // here you can start to work with your database
+                console.log('--->Successfully initialized AppDataSource')
+                initialized = true
+            })
+            .catch((error) => {
+                console.log('--->Error while initializing AppDataSource')
+                console.log(error)
+            })
+        await delay(i*10000)
+    }
+}
+initADS()
 
 app.route('/api/team')
     .get(async (req, res) => {
@@ -44,17 +70,23 @@ app.route('/api/team')
 app.route('/api/team/:id')
     .get(async (req, res) => {
         const id = Number(req.params.id)
-        const data = await teamRepo.getById(id)
-        if(!data){
-            return res.status(404).send({error: `no team with id of ${id}`})
+        try {
+            const data = await teamRepo.getById(id)
+            return res.status(200).send(data)
+        } catch (error) {
+            if(error.message === `Could not find any entity of type \"Team\" matching: {\n    \"id\": ${id}\n}`){
+                return res.status(404).send({error})
+            }
+            return res.status(500).send({error})
         }
-        return res.status(200).send(data)
     })
     .put(async (req, res) => {
         const id = Number(req.params.id)
         const updatedTeam = req.body
-        if(id !== updatedTeam.id){
-            return res.status(400).send({ error: "the id in url endpoint and request body does not match" })
+        if(updatedTeam.id){
+            if(id !== updatedTeam.id){
+                return res.status(400).send({ error: "the id in url endpoint and request body does not match" })
+            }
         }
 
         let data;
