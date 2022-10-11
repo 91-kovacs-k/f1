@@ -12,9 +12,13 @@ function pilotRepo(){
             try {
                 let items;
                 if(query){
-                    items = await repo.findBy({name: Like(`%${query}%`)})
+                    // items = await repo.findBy({name: Like(`%${query}%`)})
+                    items = await repo.createQueryBuilder("pilot")
+                                    .leftJoinAndSelect("pilot.team", "team")
+                                    .where("pilot.name like :name", {name: `%${query}%`})
+                                    .getMany()
                 }else{
-                    items = await repo.find()
+                    items = await repo.find({relations: {team: true}})
                 }
                 let ret = []
                 if(limit > 0){
@@ -39,15 +43,19 @@ function pilotRepo(){
     function getById(id: number){
         return new Promise(async (resolve, reject) => {
             try {
-                const item = await repo.findOneByOrFail({ id })
-                resolve(item)
+                // const item = await repo.findOneByOrFail({ id: id })
+                const item = await repo.find({where: { id }, relations: { team: true }})
+                if(item.length === 0){
+                    reject(`Could not find any entity of type \"Pilot\" matching: {\n    \"id\": ${id}\n}`)
+                }
+                resolve(item[0])
             } catch (error) {
                 reject(error)
             }
         })
     }
 
-    function insert(pilot: Pilot, team?: Team){
+    function insert(pilot: Pilot){
         return new Promise(async (resolve, reject) => {
             try {
                 const pilotFromDb = await repo.findOneBy({name: Like(`%${pilot.name}%`)})
@@ -58,7 +66,26 @@ function pilotRepo(){
                 if(pilot.id){
                     return reject(`do not specify id for insert!`)
                 }
-                const ret = await repo.save(pilot)
+                const pilotToSave : Pilot = pilot;
+                if(pilot.team && !pilot.team.id){
+                    try {
+                        const team = await teamRepo.get(pilot.team.name) as Team[]
+                        if(team.length > 1){
+                            return reject(`there is more than 1 team that match the pilot.team.name`)
+                        }
+                        pilotToSave.team = team[0]
+                    } catch (error) {
+                        pilotToSave.team = pilot.team
+                    }
+                }else if(pilot.team.id){
+                    try {
+                        const team = await teamRepo.getById(pilot.team.id) as Team
+                        pilotToSave.team = team
+                    } catch (error) {
+                        pilotToSave.team = pilot.team
+                    }
+                }
+                const ret = await repo.save(pilotToSave)
                 resolve(ret)
             } catch (error) {
                 reject(error)
@@ -90,12 +117,31 @@ function pilotRepo(){
                 if(pilotExists && pilotExists.id !== id){
                     return reject(`pilot with the name of ${pilot.name.toLowerCase()} already exists in database`)
                 }
-                const idExists = await repo.findOneBy({ id })
+                const idExists : Pilot = await repo.findOneBy({ id })
                 if(!idExists){
                     return reject(`pilot with id of ${id} not exists in database`)
                 }
-
                 idExists.name = pilot.name
+
+                if(pilot.team && !pilot.team.id){
+                    try {
+                        const team = await teamRepo.get(pilot.team.name) as Team[]
+                        if(team.length > 1){
+                            return reject(`there is more than 1 team that match the pilot.team.name`)
+                        }
+                        idExists.team = team[0]
+                    } catch (error) {
+                        idExists.team = pilot.team
+                    }
+                }else if(pilot.team.id){
+                    try {
+                        const team = await teamRepo.getById(pilot.team.id) as Team
+                        idExists.team = team
+                    } catch (error) {
+                        idExists.team = pilot.team
+                    }
+                }
+
                 await repo.save(idExists)
                 resolve(idExists)
             } catch (error) {

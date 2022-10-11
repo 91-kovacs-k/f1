@@ -12,8 +12,4 @@ export class Team {
 
     @OneToMany(() => Pilot, (pilot) => pilot.id)
     pilots: Pilot[]
-
-    // @ManyToOne(() => Pilot, (pilot) => pilot.id, { cascade: true })
-    // @JoinColumn()
-    // pilot: Pilot
 }

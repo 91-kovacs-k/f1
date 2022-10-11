@@ -5,7 +5,7 @@ import { Team } from './entity/Team'
 
 export const AppDataSource = new DataSource({
     type: "mssql",
-    host: "f1-mssql",    // docker
+    host: "f1-mssql",          // docker
     // host: "localhost",      // non-docker
     port: 1433,
     username: "SA",

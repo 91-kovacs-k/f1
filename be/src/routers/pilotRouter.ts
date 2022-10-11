@@ -43,7 +43,7 @@ pilotRouter.route('/:id')
         const data = await pilotRepo.getById(id)
         return res.status(200).send(data)
     } catch (error) {
-        if(error.message === `Could not find any entity of type \"Pilot\" matching: {\n    \"id\": ${id}\n}`){
+        if(error === `Could not find any entity of type \"Pilot\" matching: {\n    \"id\": ${id}\n}`){
             return res.status(404).send({error})
         }
         return res.status(500).send({error})
