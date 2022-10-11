@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function Create(){
+export default function CreateTeam(){
     const [formData, setFormData] = React.useState({
         teamName: ""
     })
@@ -40,7 +40,7 @@ export default function Create(){
     }
 
     return(
-        <div className='create'>
+        <div className='createTeam'>
             { res ? 
                 <p>{res}</p>
                 :

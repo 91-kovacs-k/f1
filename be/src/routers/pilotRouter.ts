@@ -51,16 +51,16 @@ pilotRouter.route('/:id')
 })
 .put(async (req, res) => {
     const id = Number(req.params.id)
-    const updatedTeam = req.body
-    if(updatedTeam.id){
-        if(id !== updatedTeam.id){
+    const updatedPilot = req.body
+    if(updatedPilot.id){
+        if(id !== updatedPilot.id){
             return res.status(400).send({ error: "the id in url endpoint and request body does not match" })
         }
     }
 
     let data;
     try {
-        data = await pilotRepo.update(id, updatedTeam)
+        data = await pilotRepo.update(id, updatedPilot)
     } catch (error) {
         if(error === `pilot with id of ${id} not exists in database`){
             return res.status(404).send({error})

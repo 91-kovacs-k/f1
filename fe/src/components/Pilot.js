@@ -1,19 +1,19 @@
 import React from 'react';
-import UpdateTeam from './UpdateTeam'
+import UpdatePilot from './UpdatePilot'
 
-export default function Team(params) {
-    const [teams, setTeams] = React.useState([]);
+export default function Pilot(params) {
+    const [pilots, setPilots] = React.useState([]);
     const [formData, setFormData] = React.useState({
-        teamSearch: ""
+        pilotSearch: ""
     });
     const [update, setUpdate] = React.useState()
 
     React.useEffect(() => {
-        getTeams()
+        getPilots()
     }, [])
 
-    async function getTeams() {
-        const response = await fetch("http://localhost:4000/api/team", {
+    async function getPilots() {
+        const response = await fetch("http://localhost:4000/api/pilot", {
             method: "GET",
         });
         if (!response.ok) {
@@ -21,19 +21,19 @@ export default function Team(params) {
         }
 
         const data = await response.json();
-        await setTeams(data);
+        await setPilots(data);
     }
 
-    async function getTeam(event) {
+    async function getPilot(event) {
         event.preventDefault()
-        const searchTerm = formData.teamSearch
+        const searchTerm = formData.pilotSearch
 
         if (searchTerm === '' || searchTerm === undefined || searchTerm === null) {
-            return getTeams()
+            return getPilots()
         }
 
         if (!isNaN(+searchTerm)) {
-            const response = await fetch(`http://localhost:4000/api/team/${searchTerm}`,
+            const response = await fetch(`http://localhost:4000/api/pilot/${searchTerm}`,
                 {
                     method: 'GET'
                 }
@@ -41,10 +41,10 @@ export default function Team(params) {
 
             if (!response.ok) {
                 if (response.status === 404) {
-                    await setTeams([{ id: 0, name: `no team with id of ${searchTerm}` }])
+                    await setPilots([{ id: 0, name: `no pilot with id of ${searchTerm}` }])
                     setFormData(
                         {
-                            teamSearch: ""
+                            pilotSearch: ""
                         }
                     )
                     return
@@ -53,9 +53,9 @@ export default function Team(params) {
             }
 
             const data = await response.json();
-            await setTeams([data])
+            await setPilots([data])
         } else {
-            const response = await fetch(`http://localhost:4000/api/team/`,
+            const response = await fetch(`http://localhost:4000/api/pilot/`,
                 {
                     method: 'POST',
                     headers: {
@@ -67,10 +67,10 @@ export default function Team(params) {
 
             if (!response.ok) {
                 if (response.status === 404) {
-                    await setTeams([{ id: 0, name: `no team with name of ${searchTerm}` }])
+                    await setPilots([{ id: 0, name: `no pilot with name of ${searchTerm}` }])
                     setFormData(
                         {
-                            teamSearch: ""
+                            pilotSearch: ""
                         }
                     )
                     return
@@ -79,18 +79,18 @@ export default function Team(params) {
             }
 
             const data = await response.json();
-            await setTeams(data)
+            await setPilots(data)
         }
 
         setFormData(
             {
-                teamSearch: ""
+                pilotSearch: ""
             }
         )
     }
     
-    async function deleteTeam(id){
-        const response = await fetch(`http://localhost:4000/api/team/${id}`,
+    async function deletePilot(id){
+        const response = await fetch(`http://localhost:4000/api/pilot/${id}`,
                 {
                     method: 'DELETE'
                 }
@@ -98,8 +98,8 @@ export default function Team(params) {
 
             if (!response.ok) {
                 if (response.status === 404) {
-                    await setTeams([{ id: 0, name: `no team with the id of ${id}` }])
-                    setFormData({ teamSearch: "" })
+                    await setPilots([{ id: 0, name: `no pilot with the id of ${id}` }])
+                    setFormData({ pilotSearch: "" })
                     return
                 }
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -107,14 +107,14 @@ export default function Team(params) {
 
             const data = await response.json();
             if(data){
-                await getTeams()
+                await getPilots()
             }else{
                 throw new Error(`Error while deleting: ${data}`)
             }
     }
 
-    function toggleUpdate(team){
-        setUpdate(team)
+    function toggleUpdate(pilot){
+        setUpdate(pilot)
     }
 
     function changeHandler(event) {
@@ -127,37 +127,37 @@ export default function Team(params) {
     }
 
     function renderUpdate(){
-        return <UpdateTeam team={update} />
+        return <UpdatePilot pilot={update} />
     }
 
-    function renderTeams(){
+    function renderPilots(){
         return (
             <>
-                <ul> {teamElements} </ul>
+                <ul> {pilotElements} </ul>
                 <form>
                     <input
                         type="text"
-                        name="teamSearch"
-                        id="teamSearch"
-                        value={formData.teamSearch}
-                        placeholder="Team ID or Name"
+                        name="pilotSearch"
+                        id="pilotSearch"
+                        value={formData.pilotSearch}
+                        placeholder="Pilot ID or Name"
                         onChange={changeHandler}
                     />
-                    <button onClick={getTeam}>Get team</button>
+                    <button onClick={getPilot}>Get pilot</button>
                 </form>
             </>
         )
     }
 
-    const teamElements = teams.map(team => <div className="teamItem">
-        <li key={team.id}>{team.name}</li>
-        <button onClick={() => toggleUpdate(team)}>update</button>
-        <button onClick={() => deleteTeam(team.id)}>delete</button>
+    const pilotElements = pilots.map(pilot => <div className="pilotItem">
+        <li key={pilot.id}>{pilot.name}, Team: {pilot.team?.name || "N/A"}</li>
+        <button onClick={() => toggleUpdate(pilot)}>update</button>
+        <button onClick={() => deletePilot(pilot.id)}>delete</button>
     </div>)
     
     return (
-        <div className="team">
-            {update ? renderUpdate() : (teams && renderTeams()) }
+        <div className="pilot">
+            {update ? renderUpdate() : (pilots && renderPilots()) }
         </div>
     );
 }

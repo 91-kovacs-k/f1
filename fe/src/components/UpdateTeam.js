@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function Update(params) {
+export default function UpdateTeam(params) {
     const [formData, setFormData] = React.useState({
         teamName: params.team.name
     })
@@ -17,15 +17,13 @@ export default function Update(params) {
                 body: JSON.stringify({id: params.team.id, name: formData.teamName})
             }
         )
+        const data = await response.json();
 
         if (!response.ok) {
             setRes(`Could not rename to ${formData.teamName}, because a team with 
             that name already exists in the database!`)
-            throw new Error(`HTTP error! status: ${response.error}`);
-        }
-
-        const data = await response.json();
-        if(data){
+            //throw new Error(`HTTP error! status: ${response.error}`);
+        }else if(data){
 
             setRes(`${formData.teamName} successfully updated.`)
             setFormData({
@@ -46,7 +44,7 @@ export default function Update(params) {
     }
 
     return (
-        <div className='update'>
+        <div className='updateTeam'>
             { res ? 
                 <p>{res}</p>
             :
