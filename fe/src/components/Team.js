@@ -133,31 +133,46 @@ export default function Team(params) {
     function renderTeams(){
         return (
             <>
-                <ul> {teamElements} </ul>
-                <form>
-                    <input
-                        type="text"
-                        name="teamSearch"
-                        id="teamSearch"
-                        value={formData.teamSearch}
-                        placeholder="Team ID or Name"
-                        onChange={changeHandler}
-                    />
-                    <button onClick={getTeam}>Get team</button>
-                </form>
+                
+                {teamElements}
             </>
         )
     }
 
-    const teamElements = teams.map(team => <div className="teamItem">
-        <li key={team.id}>{team.name}</li>
-        <button onClick={() => toggleUpdate(team)}>update</button>
-        <button onClick={() => deleteTeam(team.id)}>delete</button>
+    const teamElements = teams.map(team => <div className="teamItem" key={team.id}>
+        <span>{team.name}</span>
+        { team.id !== 0 ?
+            <>
+                <button onClick={() => toggleUpdate(team)}>Update</button>
+                <button className="delete" onClick={() => deleteTeam(team.id)}>Delete</button>
+            </> :
+            ""
+        }
     </div>)
     
     return (
-        <div className="team">
-            {update ? renderUpdate() : (teams && renderTeams()) }
-        </div>
+        <>
+            {update ? "" :
+                <div className='search'>
+                    <form>
+                        <input
+                            type="text"
+                            name="teamSearch"
+                            id="teamSearch"
+                            value={formData.teamSearch}
+                            placeholder="Team ID or Name"
+                            onChange={changeHandler}
+                            />
+                        <button onClick={getTeam}>Get team</button>
+                    </form>
+                </div>
+            }
+            
+            <div className="team">
+                <div className='teamBox'>
+                    {update ? renderUpdate() : (teams && renderTeams()) }
+                </div>
+            </div>
+        </>
     );
 }

@@ -47,25 +47,27 @@ export default function CreatePilot(){
     return(
         <div className='createPilot'>
             { res ? 
-                <p>{res}</p>
+                <p class="response">{res}</p>
                 :
                 <form>
-                    <input
-                        type="text"
-                        id="pilotName"
-                        name="pilotName"
-                        placeholder="Pilot Name"
-                        value={formData.pilotName}
-                        onChange={handleChange}
-                    />
-                    <input
-                        type="text"
-                        id="pilotTeam"
-                        name="pilotTeam"
-                        placeholder="Pilot's Team"
-                        value={formData.pilotTeam}
-                        onChange={handleChange}
-                    />
+                    <div className="inputs">
+                        <input
+                            type="text"
+                            id="pilotName"
+                            name="pilotName"
+                            placeholder="Pilot Name"
+                            value={formData.pilotName}
+                            onChange={handleChange}
+                        />
+                        <input
+                            type="text"
+                            id="pilotTeam"
+                            name="pilotTeam"
+                            placeholder="Pilot's Team"
+                            value={formData.pilotTeam}
+                            onChange={handleChange}
+                        />
+                    </div>
                     <button onClick={submit}>Create pilot</button>
                 </form>
             }

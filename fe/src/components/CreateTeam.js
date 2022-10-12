@@ -16,6 +16,9 @@ export default function CreateTeam(){
 
     async function submit(event){
         event.preventDefault()
+        if(formData.teamName === ""){
+            return
+        }
         const response = await fetch("http://localhost:4000/api/team", {
             method: "POST",
             headers: {
@@ -42,7 +45,7 @@ export default function CreateTeam(){
     return(
         <div className='createTeam'>
             { res ? 
-                <p>{res}</p>
+                <p class="response">{res}</p>
                 :
                 <form>
                     <input

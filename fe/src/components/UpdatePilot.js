@@ -52,25 +52,27 @@ export default function UpdatePilot(params) {
     return (
         <div className='updatePilot'>
             { res ? 
-                <p>{res}</p>
+                <p className="response">{res}</p>
             :
                 <form>
-                    <input
-                        type="text"
-                        name="pilotName"
-                        id="pilotName"
-                        onChange={changeHandler}
-                        placeholder={params.pilot.name}
-                        value={formData.pilotName}
-                    />
-                    <input
-                        type="text"
-                        name="pilotTeam"
-                        id="pilotTeam"
-                        onChange={changeHandler}
-                        placeholder={params.pilot.team?.name || "Team Name"}
-                        value={formData.pilotTeam}
-                    />
+                    <div className="inputs">
+                        <input
+                            type="text"
+                            name="pilotName"
+                            id="pilotName"
+                            onChange={changeHandler}
+                            placeholder={params.pilot.name}
+                            value={formData.pilotName}
+                        />
+                        <input
+                            type="text"
+                            name="pilotTeam"
+                            id="pilotTeam"
+                            onChange={changeHandler}
+                            placeholder={params.pilot.team?.name || "Team Name"}
+                            value={formData.pilotTeam}
+                        />
+                    </div>
                     <button onClick={submit}>Submit update</button>
                 </form>
             }

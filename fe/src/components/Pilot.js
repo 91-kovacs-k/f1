@@ -133,31 +133,43 @@ export default function Pilot(params) {
     function renderPilots(){
         return (
             <>
-                <ul> {pilotElements} </ul>
-                <form>
-                    <input
-                        type="text"
-                        name="pilotSearch"
-                        id="pilotSearch"
-                        value={formData.pilotSearch}
-                        placeholder="Pilot ID or Name"
-                        onChange={changeHandler}
-                    />
-                    <button onClick={getPilot}>Get pilot</button>
-                </form>
+                {pilotElements}
+                
             </>
         )
     }
 
     const pilotElements = pilots.map(pilot => <div className="pilotItem">
-        <li key={pilot.id}>{pilot.name}, Team: {pilot.team?.name || "N/A"}</li>
-        <button onClick={() => toggleUpdate(pilot)}>update</button>
-        <button onClick={() => deletePilot(pilot.id)}>delete</button>
+        <span key={pilot.id}>{pilot.name}{pilot.id === 0 ? "" : `, Team: ${pilot.team?.name || "N/A"}`}</span>
+        {pilot.id !== 0 ? 
+            <>
+                <button onClick={() => toggleUpdate(pilot)}>Update</button>
+                <button onClick={() => deletePilot(pilot.id)}>Delete</button>
+            </>
+        : ""}
     </div>)
     
     return (
-        <div className="pilot">
-            {update ? renderUpdate() : (pilots && renderPilots()) }
-        </div>
+        <>
+            {update ? "" :
+                <div className="search">
+                    <form>
+                        <input
+                            type="text"
+                            name="pilotSearch"
+                            id="pilotSearch"
+                            value={formData.pilotSearch}
+                            placeholder="Pilot ID or Name"
+                            onChange={changeHandler}
+                        />
+                        <button onClick={getPilot}>Get pilot</button>
+                    </form>
+                </div>
+            }
+            
+            <div className="pilot">
+                {update ? renderUpdate() : (pilots && renderPilots()) }
+            </div>
+        </>
     );
 }

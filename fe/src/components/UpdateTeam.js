@@ -46,7 +46,7 @@ export default function UpdateTeam(params) {
     return (
         <div className='updateTeam'>
             { res ? 
-                <p>{res}</p>
+                <p class="response dark">{res}</p>
             :
                 <form>
                     <input

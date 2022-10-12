@@ -1,5 +1,6 @@
 import './App.css';
 import React from 'react'
+import Header from './components/Header'
 import Team from './components/Team'
 import Pilot from './components/Pilot'
 import CreateTeam from './components/CreateTeam'
@@ -29,20 +30,21 @@ function App() {
   }
 
   return (
-    <div className="content">
-      <h1>Hello F1</h1>
-      <ul>
-        <li><button onClick={() => toggleSite(1)}>Get Teams</button></li>
-        <li><button onClick={() => toggleSite(2)}>Add Team</button></li>
-        <li><button onClick={() => toggleSite(3)}>Get Pilots</button></li>
-        <li><button onClick={() => toggleSite(4)}>Add Pilot</button></li>
-      </ul>
-
-      <div className="siteContent">
-      {
-        renderSite()
-      }
-      </div>
+    <div className="page">
+      <div className='page-content'>
+        <Header toggleSite={toggleSite} />
+        
+        <div className="siteContent">
+        {
+          renderSite()
+        }
+        { site === 0 ?
+          <div className='welcome'>
+            <h1>Welcome to F1 Exercise project!</h1>
+          </div>
+        : ""}
+        </div>
+        </div>
     </div>
   );
 }
