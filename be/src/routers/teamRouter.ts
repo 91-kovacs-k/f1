@@ -1,7 +1,7 @@
 import { Router } from 'express'
-import teamRepo from '../repos/teamRepo'
+import * as teamRepo from '../repos/teamRepo'
 
-const teamRouter = Router()
+export const teamRouter = Router()
 
 teamRouter.route('/')
 .get(async (req, res) => {
@@ -83,5 +83,3 @@ teamRouter.route('/:id')
     }
     res.send(data)
 })
-
-export default teamRouter;

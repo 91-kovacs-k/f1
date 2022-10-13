@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, Relation } from "typeorm"
 import { Pilot } from '../entity/Pilot'
 
 @Entity()
@@ -11,5 +11,5 @@ export class Team {
     name: string
 
     @OneToMany(() => Pilot, (pilot) => pilot.id)
-    pilots: Pilot[]
+    pilots: Relation<Pilot[]>
 }

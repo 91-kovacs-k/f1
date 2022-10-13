@@ -1,7 +1,7 @@
 import { Router } from 'express'
-import pilotRepo from '../repos/pilotRepo'
+import * as pilotRepo from '../repos/pilotRepo'
 
-const pilotRouter = Router()
+export const pilotRouter = Router()
 
 pilotRouter.route('/')
 .get(async (req, res) => {
@@ -83,5 +83,3 @@ pilotRouter.route('/:id')
     }
     res.send(data)
 })
-
-export default pilotRouter;
