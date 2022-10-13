@@ -3,10 +3,13 @@ import { DataSource } from "typeorm"
 import { Pilot } from './entity/Pilot'
 import { Team } from './entity/Team'
 
+const mssqlHost = process.env.NODE_DBHOST
+
 export const AppDataSource = new DataSource({
     type: "mssql",
     // host: "f1-mssql",          // docker
-    host: "localhost",      // non-docker
+    // host: "localhost",      // non-docker
+    host: mssqlHost,
     port: 1433,
     username: "SA",
     password: "notPassword123",

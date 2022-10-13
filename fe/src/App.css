@@ -26,13 +26,15 @@ body{
     height: fit-content;
     width: fit-content;
     color: #889C9B;
+    text-shadow: 2px 2px 5px #3B3936;;
 } 
 
 .page{
-    min-height: 97.9vh;
-    width: 60rem;
-    margin: 1rem auto 0 auto;
-    padding-bottom: 2rem;
+    min-height: 98vh;
+    min-width: 900px;
+    max-width: 1000px;
+    margin: 2vh auto 0 auto;
+    padding-bottom: 2vh;
     background-color: #889C9B;
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
@@ -56,21 +58,30 @@ body{
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
     color: #B2BEBF;
+    border-bottom: 1px solid #3B3936;
     display: flex;
     align-items: center;
-    
+}
+
+.header > button{
+    display: flex;
+    align-items: center;
+    height: 1rem;
+    margin-right: auto;
 }
 
 .header > button > h2 {
-    margin: auto auto auto 0;
+    display: flex;
+    align-items: center;
+    height: 1rem;
     font-size: 3rem;
+    
 }
 
-.menu > ul {
+.header > .menu > ul {
     display: flex;
-    flex-flow: row wrap;
+    align-items: flex-end;
     gap: 2rem;
-    justify-content: center;
 }
 
 button{
