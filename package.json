@@ -13,20 +13,14 @@
 
     "create-docker-network": "docker network create --driver bridge f1_f1-net",
 
-    "mssql-build-docker": "cd data & docker build -t 91kovacsk/f1-mssql .", 
-    "mssql-run-docker": "docker run --net=f1_f1-net --name f1-mssql -e \"ACCEPT_EULA=Y\" -e \"MSSQL_SA_PASSWORD=notPass123\" -p 1433:1433 -v ../f1-data/MSSQL/data:/var/opt/mssql/data -v ../f1-data/MSSQL/log:/var/opt/mssql/log -v ../f1-data/MSSQL/secrets:/var/opt/mssql/secrets -d 91kovacsk/f1-mssql",
-    "mssql-run": "npm run mssql-build-docker & npm run mssql-run-docker",
-    "mssql-stop-docker": "docker rm -f f1-mssql & docker rmi f1-mssql",
+    "mssql": "docker-compose up mssql -d",
+    "mssql-stop": "docker rm -f f1-mssql",
 
-    "be-build-docker": "cd be & docker build -t 91kovacsk/f1-be .",
-    "be-run-docker": "docker run -p 4000:4000 --net=f1_f1-net --name f1-be-cont -d 91kovacsk/f1-be",
-    "be-run": "cd be & npm run build & cd .. & npm run be-build-docker & npm run be-run-docker",
-    "be-stop-docker": "docker rm -f f1-be-cont & docker rmi 91kovacsk/f1-be",
+    "be-cont": "cd be && npm run build && cd .. && docker-compose up f1-be -d",
+    "be-stop": "docker rm -f f1-be-cont",
 
-    "fe-build-docker": "cd fe & docker build -t 91kovacsk/f1-fe .",
-    "fe-run-docker": "docker run -p 3000:3000 --net=f1_f1-net --name f1-fe-cont -d 91kovacsk/f1-fe",
-    "fe-run": "npm run fe-build-docker & npm run fe-run-docker",
-    "fe-stop-docker": "docker rm -f f1-fe-cont & docker rmi 91kovacsk/f1-fe",
+    "fe-cont": "docker-compose up f1-fe -d",
+    "fe-stop": "docker rm -f f1-fe-cont",
     
     "clear-docker-containers": "docker rm -f f1-mssql f1-be-cont f1-fe-cont",
     "clear-docker-images": "docker rmi 91kovacsk/f1-mssql 91kovacsk/f1-be 91kovacsk/f1-fe",

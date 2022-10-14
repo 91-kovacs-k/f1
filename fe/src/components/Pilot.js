@@ -1,7 +1,7 @@
 import React from 'react';
 import UpdatePilot from './UpdatePilot'
 
-export default function Pilot(params) {
+export default function Pilot() {
     const [pilots, setPilots] = React.useState([]);
     const [formData, setFormData] = React.useState({
         pilotSearch: ""
@@ -26,7 +26,7 @@ export default function Pilot(params) {
 
     async function getPilot(event) {
         event.preventDefault()
-        const searchTerm = formData.pilotSearch
+        const searchTerm = formData.pilotSearch.trimStart().trimEnd()
 
         if (searchTerm === '' || searchTerm === undefined || searchTerm === null) {
             return getPilots()
@@ -88,32 +88,32 @@ export default function Pilot(params) {
             }
         )
     }
-    
-    async function deletePilot(id){
+
+    async function deletePilot(id) {
         const response = await fetch(`http://localhost:4000/api/pilot/${id}`,
-                {
-                    method: 'DELETE'
-                }
-            )
-
-            if (!response.ok) {
-                if (response.status === 404) {
-                    await setPilots([{ id: 0, name: `no pilot with the id of ${id}` }])
-                    setFormData({ pilotSearch: "" })
-                    return
-                }
-                throw new Error(`HTTP error! status: ${response.status}`);
+            {
+                method: 'DELETE'
             }
+        )
 
-            const data = await response.json();
-            if(data){
-                await getPilots()
-            }else{
-                throw new Error(`Error while deleting: ${data}`)
+        if (!response.ok) {
+            if (response.status === 404) {
+                await setPilots([{ id: 0, name: `no pilot with the id of ${id}` }])
+                setFormData({ pilotSearch: "" })
+                return
             }
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data) {
+            await getPilots()
+        } else {
+            throw new Error(`Error while deleting: ${data}`)
+        }
     }
 
-    function toggleUpdate(pilot){
+    function toggleUpdate(pilot) {
         setUpdate(pilot)
     }
 
@@ -126,29 +126,34 @@ export default function Pilot(params) {
         }))
     }
 
-    function renderUpdate(){
+    function renderUpdate() {
         return <UpdatePilot pilot={update} />
     }
 
-    function renderPilots(){
+    function renderPilots() {
         return (
             <>
                 {pilotElements}
-                
+
             </>
         )
     }
-
+    pilots.sort((a, b) => {
+        if ((a.team?.name || "") < (b.team?.name || "")) { return -1; }
+        if ((a.team?.name || "") > (b.team?.name || "")) { return 1; }
+        return 0;
+    })
     const pilotElements = pilots.map(pilot => <div className="pilotItem">
         <span key={pilot.id}>{pilot.name}{pilot.id === 0 ? "" : `, Team: ${pilot.team?.name || "N/A"}`}</span>
-        {pilot.id !== 0 ? 
+        {pilot.id !== 0 ?
             <>
                 <button onClick={() => toggleUpdate(pilot)}>Update</button>
-                <button onClick={() => deletePilot(pilot.id)}>Delete</button>
+                <button className="delete" onClick={() => deletePilot(pilot.id)}>Delete</button>
             </>
-        : ""}
+            : ""}
     </div>)
-    
+
+
     return (
         <>
             {update ? "" :
@@ -166,9 +171,9 @@ export default function Pilot(params) {
                     </form>
                 </div>
             }
-            
+
             <div className="pilot">
-                {update ? renderUpdate() : (pilots && renderPilots()) }
+                {update ? renderUpdate() : (pilots && renderPilots())}
             </div>
         </>
     );

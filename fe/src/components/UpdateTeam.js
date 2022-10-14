@@ -6,15 +6,15 @@ export default function UpdateTeam(params) {
     })
     const [res, setRes] = React.useState('')
 
-    async function submit(event){
+    async function submit(event) {
         event.preventDefault()
         const response = await fetch(`http://localhost:4000/api/team/${params.team.id}`,
             {
                 method: 'PUT',
-                headers:{
+                headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({id: params.team.id, name: formData.teamName})
+                body: JSON.stringify({ id: params.team.id, name: formData.teamName.trimStart().trimEnd() })
             }
         )
         const data = await response.json();
@@ -23,18 +23,18 @@ export default function UpdateTeam(params) {
             setRes(`Could not rename to ${formData.teamName}, because a team with 
             that name already exists in the database!`)
             //throw new Error(`HTTP error! status: ${response.error}`);
-        }else if(data){
+        } else if (data) {
 
             setRes(`${formData.teamName} successfully updated.`)
             setFormData({
                 teamName: ""
             })
-        }else{
+        } else {
             throw new Error(`HTTP error! status: ${response.error}`);
         }
     }
 
-    function changeHandler(event){
+    function changeHandler(event) {
         const { name, value } = event.target
 
         setFormData(prevFormData => ({
@@ -45,9 +45,9 @@ export default function UpdateTeam(params) {
 
     return (
         <div className='updateTeam'>
-            { res ? 
+            {res ?
                 <p class="response dark">{res}</p>
-            :
+                :
                 <form>
                     <input
                         type="text"

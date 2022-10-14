@@ -3,20 +3,21 @@ import React from 'react'
 export default function UpdatePilot(params) {
     const [formData, setFormData] = React.useState({
         pilotName: params.pilot.name,
-        pilotTeam: params.pilot.team?.name || "N/A"
+        pilotTeam: params.pilot.team?.name || ""
     })
     const [res, setRes] = React.useState('')
 
-    async function submit(event){
+    async function submit(event) {
         event.preventDefault()
-        const body = formData.pilotTeam === "N/A" || "" ? 
-            JSON.stringify({id: params.pilot.id, name: formData.pilotName}) :
-            JSON.stringify({id: params.pilot.id, name: formData.pilotName, team: { name: formData.pilotTeam}})
+        const team = formData.pilotTeam.trimStart().trimEnd()
+        const body = team === "N/A" || team === "n/a" || team === "na" || team === "" ?
+            JSON.stringify({ id: params.pilot.id, name: formData.pilotName, team: null }) :
+            JSON.stringify({ id: params.pilot.id, name: formData.pilotName, team: { name: formData.pilotTeam } })
 
         const response = await fetch(`http://localhost:4000/api/pilot/${params.pilot.id}`,
             {
                 method: 'PUT',
-                headers:{
+                headers: {
                     'Content-Type': 'application/json'
                 },
                 body: body
@@ -28,19 +29,19 @@ export default function UpdatePilot(params) {
             setRes(`Could not rename to ${formData.pilotName}, because a pilot with 
             that name already exists in the database!`)
             //throw new Error(`HTTP error! status: ${response.error}`);
-        }else if(data){
+        } else if (data) {
 
             setRes(`${formData.pilotName} successfully updated.`)
             setFormData({
                 pilotName: "",
                 pilotTeam: ""
             })
-        }else{
+        } else {
             throw new Error(`HTTP error! status: ${response.error}`);
         }
     }
 
-    function changeHandler(event){
+    function changeHandler(event) {
         const { name, value } = event.target
 
         setFormData(prevFormData => ({
@@ -51,9 +52,9 @@ export default function UpdatePilot(params) {
 
     return (
         <div className='updatePilot'>
-            { res ? 
+            {res ?
                 <p className="response">{res}</p>
-            :
+                :
                 <form>
                     <div className="inputs">
                         <input

@@ -1,22 +1,22 @@
 import React from 'react'
 
-export default function CreateTeam(){
+export default function CreateTeam() {
     const [formData, setFormData] = React.useState({
         teamName: ""
     })
     const [res, setRes] = React.useState('')
 
-    function handleChange(event){
-        const {name, value} = event.target
+    function handleChange(event) {
+        const { name, value } = event.target
         setFormData(prevFormData => ({
             ...prevFormData,
             [name]: value
         }))
     }
 
-    async function submit(event){
+    async function submit(event) {
         event.preventDefault()
-        if(formData.teamName === ""){
+        if (formData.teamName === "") {
             return
         }
         const response = await fetch("http://localhost:4000/api/team", {
@@ -24,7 +24,7 @@ export default function CreateTeam(){
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({name: formData.teamName})
+            body: JSON.stringify({ name: formData.teamName.trimStart().trimEnd() })
         });
 
         const data = await response.json();
@@ -34,7 +34,7 @@ export default function CreateTeam(){
             throw new Error(`Error while deleting: ${data}`)
         }
 
-        if(data){
+        if (data) {
             setRes(`${formData.teamName} successfully created.`)
         }
         setFormData({
@@ -42,9 +42,9 @@ export default function CreateTeam(){
         })
     }
 
-    return(
+    return (
         <div className='createTeam'>
-            { res ? 
+            {res ?
                 <p class="response">{res}</p>
                 :
                 <form>

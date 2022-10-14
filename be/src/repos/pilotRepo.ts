@@ -136,6 +136,8 @@ export function update(id : number, pilot : Pilot){
                 } catch (error) {
                     idExists.team = pilot.team
                 }
+            }else{
+                idExists.team = null;
             }
             await repo.save(idExists)
             resolve(idExists)

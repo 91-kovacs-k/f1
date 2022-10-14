@@ -9,9 +9,9 @@ export const AppDataSource = new DataSource({
     type: "mssql",
     // host: "f1-mssql",          // docker
     // host: "localhost",      // non-docker
-    host: mssqlHost,
+    host: mssqlHost,            // from env
     port: 1433,
-    username: "F1user",
+    username: "SA",
     password: "notPassword123",
     database: "F1",
     synchronize: true,

@@ -17,7 +17,8 @@ export default function CreatePilot() {
 
     async function submit(event) {
         event.preventDefault()
-        const body = formData.pilotTeam === "N/A" || formData.pilotName === "" ?
+        const team = formData.pilotTeam.trimStart().trimEnd()
+        const body = team === "N/A" || team === "n/a" || team === "na" || team === "" ?
             JSON.stringify({ name: formData.pilotName }) :
             JSON.stringify({ name: formData.pilotName, team: { name: formData.pilotTeam } })
 

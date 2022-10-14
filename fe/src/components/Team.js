@@ -26,7 +26,7 @@ export default function Team(params) {
 
     async function getTeam(event) {
         event.preventDefault()
-        const searchTerm = formData.teamSearch
+        const searchTerm = formData.teamSearch.trimStart().trimEnd()
 
         if (searchTerm === '' || searchTerm === undefined || searchTerm === null) {
             return getTeams()
@@ -88,32 +88,32 @@ export default function Team(params) {
             }
         )
     }
-    
-    async function deleteTeam(id){
+
+    async function deleteTeam(id) {
         const response = await fetch(`http://localhost:4000/api/team/${id}`,
-                {
-                    method: 'DELETE'
-                }
-            )
-
-            if (!response.ok) {
-                if (response.status === 404) {
-                    await setTeams([{ id: 0, name: `no team with the id of ${id}` }])
-                    setFormData({ teamSearch: "" })
-                    return
-                }
-                throw new Error(`HTTP error! status: ${response.status}`);
+            {
+                method: 'DELETE'
             }
+        )
 
-            const data = await response.json();
-            if(data){
-                await getTeams()
-            }else{
-                throw new Error(`Error while deleting: ${data}`)
+        if (!response.ok) {
+            if (response.status === 404) {
+                await setTeams([{ id: 0, name: `no team with the id of ${id}` }])
+                setFormData({ teamSearch: "" })
+                return
             }
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data) {
+            await getTeams()
+        } else {
+            throw new Error(`Error while deleting: ${data}`)
+        }
     }
 
-    function toggleUpdate(team){
+    function toggleUpdate(team) {
         setUpdate(team)
     }
 
@@ -126,22 +126,27 @@ export default function Team(params) {
         }))
     }
 
-    function renderUpdate(){
+    function renderUpdate() {
         return <UpdateTeam team={update} />
     }
 
-    function renderTeams(){
+    function renderTeams() {
         return (
             <>
-                
+
                 {teamElements}
             </>
         )
     }
 
+    teams.sort((a, b) => {
+        if (a.name < b.name) { return -1; }
+        if (a.name > b.name) { return 1; }
+        return 0;
+    })
     const teamElements = teams.map(team => <div className="teamItem" key={team.id}>
         <span>{team.name}</span>
-        { team.id !== 0 ?
+        {team.id !== 0 ?
             <>
                 <button onClick={() => toggleUpdate(team)}>Update</button>
                 <button className="delete" onClick={() => deleteTeam(team.id)}>Delete</button>
@@ -149,7 +154,7 @@ export default function Team(params) {
             ""
         }
     </div>)
-    
+
     return (
         <>
             {update ? "" :
@@ -162,15 +167,15 @@ export default function Team(params) {
                             value={formData.teamSearch}
                             placeholder="Team ID or Name"
                             onChange={changeHandler}
-                            />
+                        />
                         <button onClick={getTeam}>Get team</button>
                     </form>
                 </div>
             }
-            
+
             <div className="team">
                 <div className='teamBox'>
-                    {update ? renderUpdate() : (teams && renderTeams()) }
+                    {update ? renderUpdate() : (teams && renderTeams())}
                 </div>
             </div>
         </>

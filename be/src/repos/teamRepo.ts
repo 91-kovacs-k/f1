@@ -92,7 +92,12 @@ export function remove(id : number){
             if(!team){
                 return reject(`team with ${id} not exists in database`)
             }
+            const pilots = await AppDataSource.getRepository("pilot").find({ where: { team: team }})
 
+            pilots.forEach(async (pilot) => {
+                pilot.team = null
+                await AppDataSource.getRepository("pilot").save(pilot)
+            })
             const ret = await repo.remove(team)
             resolve(ret)
         } catch (error) {
