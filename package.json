@@ -5,10 +5,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
 
-    "init": "cd .. & mkdir f1-data\\MSSQL & cd f1-data\\MSSQL & mkdir data log secrets",
-    "clear-init": "cd .. & rmdir /s f1-data",
+    "init": "cd .. && mkdir f1-data\\MSSQL && cd f1-data\\MSSQL && mkdir data log secrets",
+    "clear-init": "cd .. && rmdir /s f1-data",
 
-    "start": "cd be & npm run build & cd.. & docker-compose up -d",
+    "start": "cd be && npm run build && cd.. && docker-compose up -d",
     "stop": "docker-compose down",
 
     "create-docker-network": "docker network create --driver bridge f1_f1-net",
@@ -26,8 +26,8 @@
     "clear-docker-images": "docker rmi 91kovacsk/f1-mssql 91kovacsk/f1-be 91kovacsk/f1-fe",
     "remove-docker-network": "docker network rm f1_f1-net",
 
-    "be": "cd be & tsc & npm start",
-    "fe": "cd fe & npm start"
+    "be": "cd be && tsc && npm start",
+    "fe": "cd fe && npm start"
   },
   "repository": {
     "type": "git",
