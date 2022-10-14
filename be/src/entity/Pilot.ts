@@ -1,16 +1,15 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Relation } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Relation } from 'typeorm'
 import { Team } from '../entity/Team'
 
 @Entity()
 export class Pilot {
-
-    @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn()
     id: number
 
-    @Column()
+  @Column()
     name: string
 
-    @ManyToOne(() => Team, (team) => team.id, { cascade: true })
-    @JoinColumn()
+  @ManyToOne(() => Team, (team) => team.id, { cascade: true })
+  @JoinColumn()
     team: Relation<Team>
 }

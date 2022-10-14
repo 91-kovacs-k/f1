@@ -13,5 +13,5 @@ app.use('/api/team', teamRouter)
 app.use('/api/pilot', pilotRouter)
 
 app.listen(4000, () => {
-    console.log('--->BE listening on port 4000.')
+  console.log('--->BE listening on port 4000.')
 })
