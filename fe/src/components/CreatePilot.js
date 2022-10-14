@@ -1,25 +1,25 @@
 import React from 'react'
 
-export default function CreatePilot(){
+export default function CreatePilot() {
     const [formData, setFormData] = React.useState({
         pilotName: "",
         pilotTeam: ""
     })
     const [res, setRes] = React.useState('')
 
-    function handleChange(event){
-        const {name, value} = event.target
+    function handleChange(event) {
+        const { name, value } = event.target
         setFormData(prevFormData => ({
             ...prevFormData,
             [name]: value
         }))
     }
 
-    async function submit(event){
+    async function submit(event) {
         event.preventDefault()
-        const body = formData.pilotTeam === "N/A" || "" ? 
+        const body = formData.pilotTeam === "N/A" || formData.pilotName === "" ?
             JSON.stringify({ name: formData.pilotName }) :
-            JSON.stringify({ name: formData.pilotName, team: { name: formData.pilotTeam}})
+            JSON.stringify({ name: formData.pilotName, team: { name: formData.pilotTeam } })
 
         const response = await fetch("http://localhost:4000/api/pilot", {
             method: "POST",
@@ -35,7 +35,7 @@ export default function CreatePilot(){
             throw new Error(`Error while creating pilot: ${data}`)
         }
 
-        if(data){
+        if (data) {
             setRes(`${formData.pilotName} successfully created.`)
         }
         setFormData({
@@ -44,9 +44,9 @@ export default function CreatePilot(){
         })
     }
 
-    return(
+    return (
         <div className='createPilot'>
-            { res ? 
+            {res ?
                 <p class="response">{res}</p>
                 :
                 <form>

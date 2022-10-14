@@ -5,6 +5,8 @@ services:
   f1-be:
     image: 91kovacsk/f1-be
     container_name: f1-be-cont
+    environment:
+      - NODE_DBHOST=${NODE_DBHOST}
     build:
       context: ./be
       dockerfile: Dockerfile
