@@ -5,7 +5,7 @@
   "main": "dist/app.js",
   "type": "module",
   "scripts": {
-    "prebuild": "",
+    "prebuild": "eslint ./src --fix",
     "build": "tsc",
     "prestart": "npm run build",
     "start": "set NODE_DBHOST=localhost&& node --experimental-specifier-resolution=node .",

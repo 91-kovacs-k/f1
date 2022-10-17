@@ -14,8 +14,8 @@ function App() {
     setSite(siteNum)
   }
 
-  function renderSite(){
-    switch(site){
+  function renderSite() {
+    switch (site) {
       case 1:
         return <Team />
       case 2:
@@ -33,18 +33,18 @@ function App() {
     <div className="page">
       <div className='page-content'>
         <Header toggleSite={toggleSite} />
-        
+
         <div className="siteContent">
-        {
-          renderSite()
-        }
-        { site === 0 ?
-          <div className='welcome'>
-            <h1>Welcome to F1 Exercise project!</h1>
-          </div>
-        : ""}
+          {
+            renderSite()
+          }
+          {site === 0 ?
+            <div className='welcome'>
+              <h1>Welcome to F1 Exercise project!</h1>
+            </div>
+            : ""}
         </div>
-        </div>
+      </div>
     </div>
   );
 }

@@ -70,7 +70,7 @@ pilotRouter.route('/:id')
       if (error.type === ErrorType.NotFound) {
         return res.status(404).send(error)
       }
-      if (error.type === ErrorType.AlreadyExists || error.type === ErrorType.IdMismatch) {
+      if (error.type === ErrorType.AlreadyExists || error.type === ErrorType.IdMismatch || error.type === ErrorType.MultipleMatch || error.type === ErrorType.NotFound) {
         return res.status(400).send(error)
       }
       return res.status(500).send(error)

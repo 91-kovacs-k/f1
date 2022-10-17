@@ -1,9 +1,9 @@
 import React from 'react'
 
-export default function Header({toggleSite}){
+export default function Header({ toggleSite }) {
 
 
-    return(
+    return (
         <div className='header'>
             <button className='logo' onClick={() => toggleSite(0)}><h2>F1</h2></button>
             <div className='menu'>
