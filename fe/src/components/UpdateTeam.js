@@ -20,8 +20,7 @@ export default function UpdateTeam(params) {
         const data = await response.json();
 
         if (!response.ok) {
-            setRes(`Could not rename to ${formData.teamName}, because a team with 
-            that name already exists in the database!`)
+            setRes(`Error while updating team: ${data.reason}`)
             //throw new Error(`HTTP error! status: ${response.error}`);
         } else if (data) {
 

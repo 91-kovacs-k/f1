@@ -16,11 +16,17 @@ export default function Team(params) {
         const response = await fetch("http://localhost:4000/api/team", {
             method: "GET",
         });
+        const data = await response.json();
+
         if (!response.ok) {
+            if (response.status === 404) {
+                await setTeams([{ id: 0, name: `Error while loading teams: ${data.reason}` }])
+                setFormData({ teamSearch: "" })
+                return
+            }
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data = await response.json();
         await setTeams(data);
     }
 
@@ -144,16 +150,22 @@ export default function Team(params) {
         if (a.name > b.name) { return 1; }
         return 0;
     })
-    const teamElements = teams.map(team => <div className="teamItem" key={team.id}>
-        <span>{team.name}</span>
-        {team.id !== 0 ?
-            <>
-                <button onClick={() => toggleUpdate(team)}>Update</button>
-                <button className="delete" onClick={() => deleteTeam(team.id)}>Delete</button>
-            </> :
-            ""
+    const teamElements = teams.map(team => {
+        if (team.id !== 0) {
+            return (
+                <div className="teamItem" key={team.id}>
+                    <span>{team.name}</span>
+                    <button onClick={() => toggleUpdate(team)}>Update</button>
+                    <button className="delete" onClick={() => deleteTeam(team.id)}>Delete</button>
+                </div>
+            )
+        } else {
+            return (
+                <p className='response'>{team.name}</p>
+            )
         }
-    </div>)
+    })
+
 
     return (
         <>

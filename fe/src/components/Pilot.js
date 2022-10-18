@@ -16,11 +16,16 @@ export default function Pilot() {
         const response = await fetch("http://localhost:4000/api/pilot", {
             method: "GET",
         });
+        const data = await response.json();
         if (!response.ok) {
+            if (response.status === 404) {
+                await setPilots([{ id: 0, name: `Error while loading pilots: ${data.reason}` }])
+                setFormData({ teamSearch: "" })
+                return
+            }
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data = await response.json();
         await setPilots(data);
     }
 
@@ -143,16 +148,21 @@ export default function Pilot() {
         if ((a.team?.name || "") > (b.team?.name || "")) { return 1; }
         return 0;
     })
-    const pilotElements = pilots.map(pilot => <div className="pilotItem">
-        <span key={pilot.id}>{pilot.name}{pilot.id === 0 ? "" : `, Team: ${pilot.team?.name || "N/A"}`}</span>
-        {pilot.id !== 0 ?
-            <>
-                <button onClick={() => toggleUpdate(pilot)}>Update</button>
-                <button className="delete" onClick={() => deletePilot(pilot.id)}>Delete</button>
-            </>
-            : ""}
-    </div>)
-
+    const pilotElements = pilots.map(pilot => {
+        if (pilot.id !== 0) {
+            return (
+                <div className="pilotItem">
+                    <span key={pilot.id}>{pilot.name}{pilot.id === 0 ? "" : `, Team: ${pilot.team?.name || "N/A"}`}</span>
+                    <button onClick={() => toggleUpdate(pilot)}>Update</button>
+                    <button className="delete" onClick={() => deletePilot(pilot.id)}>Delete</button>
+                </div>
+            )
+        } else {
+            return (
+                <p className='response'>{pilot.name}</p>
+            )
+        }
+    })
 
     return (
         <>

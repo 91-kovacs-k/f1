@@ -9,8 +9,8 @@ export default function UpdatePilot(params) {
 
     async function submit(event) {
         event.preventDefault()
-        const team = formData.pilotTeam.trimStart().trimEnd()
-        const body = team === "N/A" || team === "n/a" || team === "na" || team === "" ?
+        const team = formData.pilotTeam.trimStart().trimEnd().toLowerCase()
+        const body = team === "n/a" || team === "na" || team === "" ?
             JSON.stringify({ id: params.pilot.id, name: formData.pilotName, team: null }) :
             JSON.stringify({ id: params.pilot.id, name: formData.pilotName, team: { name: formData.pilotTeam } })
 
@@ -26,8 +26,7 @@ export default function UpdatePilot(params) {
         const data = await response.json();
 
         if (!response.ok) {
-            setRes(`Could not rename to ${formData.pilotName}, because a pilot with 
-            that name already exists in the database!`)
+            setRes(`Error when updating pilot: ${data.reason}`)
             //throw new Error(`HTTP error! status: ${response.error}`);
         } else if (data) {
 

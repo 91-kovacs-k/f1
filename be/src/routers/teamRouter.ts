@@ -11,7 +11,7 @@ teamRouter.route('/')
       const data = await teamRepo.get()
       return res.send(data)
     } catch (error) {
-      if (error.type === ErrorType.NotFound) {
+      if (error.type === ErrorType.NotFound || error.type === ErrorType.NoRecords) {
         return res.status(404).send(error)
       }
       return res.status(500).send(error)
@@ -23,7 +23,7 @@ teamRouter.route('/')
         const ret = await teamRepo.get(req.body.name, req.body.limit)
         return res.send(ret)
       } catch (error) {
-        if (error.type === ErrorType.NotFound) {
+        if (error.type === ErrorType.NotFound || error.type === ErrorType.NoRecords) {
           return res.status(404).send(error)
         }
         return res.status(500).send(error)
@@ -34,12 +34,12 @@ teamRouter.route('/')
     try {
       data = await teamRepo.insert(req.body)
     } catch (error) {
-      if (error.type === ErrorType.AlreadyExists) {
+      if (error.type === ErrorType.AlreadyExists || error.type === ErrorType.IdMismatch) {
         return res.status(400).send(error)
       }
       return res.status(500).send(error)
     }
-    res.send(data)
+    return res.send(data)
   })
 
 teamRouter.route('/:id')
@@ -71,13 +71,13 @@ teamRouter.route('/:id')
       if (error.type === ErrorType.NotFound) {
         return res.status(404).send(error)
       }
-      if (error.type === ErrorType.AlreadyExists) {
+      if (error.type === ErrorType.AlreadyExists || error.type === ErrorType.IdMismatch || error.type === ErrorType.ArgumentError) {
         return res.status(400).send(error)
       }
       return res.status(500).send(error)
     }
 
-    return res.send(data)
+    res.send(data)
   })
   .delete(async (req, res) => {
     const id = Number(req.params.id)
@@ -90,5 +90,5 @@ teamRouter.route('/:id')
       }
       return res.status(500).send(error)
     }
-    res.send(data)
+    return res.send(data)
   })

@@ -30,7 +30,7 @@ export default function CreateTeam() {
         const data = await response.json();
 
         if (!response.ok) {
-            setRes(`Error while creating team: ${data.error}`)
+            setRes(`Error while creating team: ${data.reason}`)
             throw new Error(`Error while deleting: ${data}`)
         }
 

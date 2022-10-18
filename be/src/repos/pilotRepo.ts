@@ -43,41 +43,52 @@ export const get = async (query?: string, limit: number = 0): Promise<Pilot[]> =
 }
 
 export const getById = async (id: number): Promise<Pilot> => {
+  let item: Pilot[]
   try {
-    const item = await repo.find({ where: { id }, relations: { team: true } })
-    if (item.length === 0) {
-      return await new Promise((resolve, reject) => {
-        reject(new BackendError(ErrorType.NotFound, 'not found', `Could not find any entity of type "Pilot" matching: {\n    "id": ${id}\n}`))
-      })
-    }
-    return await new Promise((resolve, reject) => {
-      resolve(item[0])
-    })
+    item = await repo.find({ where: { id }, relations: { team: true } })
   } catch (error) {
     return await new Promise((resolve, reject) => {
       reject(new BackendError(ErrorType.ServerError, 'server error', error.message))
     })
   }
+  if (item.length === 0) {
+    return await new Promise((resolve, reject) => {
+      reject(new BackendError(ErrorType.NotFound, 'not found', `Could not find any entity of type "Pilot" matching: {\n    "id": ${id}\n}`))
+    })
+  }
+  return await new Promise((resolve, reject) => {
+    resolve(item[0])
+  })
 }
 
 export const insert = async (pilot: Pilot): Promise<Pilot> => {
+  let pilotFromDb: Pilot | null = null
+
   try {
-    const pilotFromDb = await repo.findOneBy({ name: Like(`%${pilot.name}%`) })
-    if (pilotFromDb != null) {
-      return await new Promise((resolve, reject) => {
-        return reject(new BackendError(ErrorType.AlreadyExists, 'already exists', `${pilot.name.toLowerCase()} already exists in database`))
-      })
-    }
+    pilotFromDb = await repo.findOneBy({ name: Like(`%${pilot.name}%`) })
+  } catch (error) {
+    return await new Promise((resolve, reject) => {
+      return reject(new BackendError(ErrorType.ServerError, 'server error', error.message))
+    })
+  }
 
-    if (pilot.id > 0) {
-      return await new Promise((resolve, reject) => {
-        return reject(new BackendError(ErrorType.ArgumentError, 'argument error', 'do not specify id for insert!'))
-      })
-    }
-    const pilotToSave: Pilot = pilot
+  if (pilotFromDb !== null) {
+    return await new Promise((resolve, reject) => {
+      return reject(new BackendError(ErrorType.AlreadyExists, 'already exists', `${pilot.name.toLowerCase()} already exists in database`))
+    })
+  }
 
-    let teamById: Team | null = null
-    if (pilot.team !== null && pilot.team.id > 0) {
+  if (pilot.id > 0) {
+    return await new Promise((resolve, reject) => {
+      return reject(new BackendError(ErrorType.ArgumentError, 'argument error', 'do not specify id for insert!'))
+    })
+  }
+  const pilotToSave: Pilot = pilot
+
+  let teamById: Team | null = null
+  let teamByName: Team[] = []
+  if (!(pilot.team === null || pilot.team === undefined)) {
+    if (pilot.team.id > 0) {
       try {
         teamById = await teamRepo.getById(Number(pilot.team.id))
       } catch (error) {
@@ -87,8 +98,7 @@ export const insert = async (pilot: Pilot): Promise<Pilot> => {
       }
     }
 
-    let teamByName: Team[] = []
-    if (pilot.team !== null && !(pilot.team.name === null || pilot.team.name === undefined)) {
+    if (!(pilot.team.name === null || pilot.team.name === undefined)) {
       try {
         teamByName = await teamRepo.get(pilot.team.name)
         if (teamByName.length > 1) {
@@ -102,127 +112,156 @@ export const insert = async (pilot: Pilot): Promise<Pilot> => {
           })
         }
       } catch (error) {
-        teamByName = [pilot.team] as Team[]
+        if (error.type === ErrorType.MultipleMatch) {
+          return await new Promise((resolve, reject) => {
+            return reject(error)
+          })
+        }
+        if (error.type === ErrorType.NotFound) {
+          teamByName = [pilot.team] as Team[]
+        }
       }
     }
+  }
 
-    if (!(teamById === null || teamById === undefined) && !(teamByName[0] === null || teamByName[0] === undefined)) {
-      if ((teamByName[0].id !== teamById.id) || (teamByName[0].name !== teamById.name)) {
-        return await new Promise((resolve, reject) => {
-          return reject(new BackendError(ErrorType.IdMismatch, 'id mismatch', `the id from request body is belong to '${(teamById as Team).name}' but in request the name was matching: '${teamByName[0].name}'`))
-        })
-      }
+  if (!(teamById === null || teamById === undefined) && !(teamByName[0] === null || teamByName[0] === undefined)) {
+    if ((teamByName[0].id !== teamById.id) || (teamByName[0].name !== teamById.name)) {
+      return await new Promise((resolve, reject) => {
+        return reject(new BackendError(ErrorType.IdMismatch, 'id mismatch', `the id from request body is belong to '${(teamById as Team).name}' but in request the name was matching: '${teamByName[0].name}'`))
+      })
     }
+  }
 
-    if (!(teamById === null || teamById === undefined)) {
-      pilotToSave.team = teamById
-    } else if (!(teamByName[0] === null || teamByName[0] === undefined)) {
-      pilotToSave.team = teamByName[0]
-    } else {
-      pilotToSave.team = pilot.team
-    }
+  if (!(teamById === null || teamById === undefined)) {
+    pilotToSave.team = teamById
+  } else if (!(teamByName[0] === null || teamByName[0] === undefined)) {
+    pilotToSave.team = teamByName[0]
+  } else {
+    pilotToSave.team = pilot.team
+  }
 
-    const ret = await repo.save(pilotToSave)
-    return await new Promise((resolve, reject) => {
-      resolve(ret)
-    })
+  let ret: Pilot
+  try {
+    ret = await repo.save(pilotToSave)
   } catch (error) {
     return await new Promise((resolve, reject) => {
-      reject(new BackendError(ErrorType.ServerError, 'server error', error.message))
+      return reject(new BackendError(ErrorType.ServerError, 'server error', error.message))
     })
   }
+
+  return await new Promise((resolve, reject) => {
+    resolve(ret)
+  })
 }
 
 export const remove = async (id: number): Promise<Pilot> => {
+  let pilot: Pilot | null = null
   try {
-    const pilot = await repo.findOneBy({ id })
-    if (pilot == null) {
-      return await new Promise((resolve, reject) => {
-        return reject(new BackendError(ErrorType.NotFound, 'not found', `pilot with ${id} not exists in database`))
-      })
-    }
-
-    const ret = await repo.remove(pilot)
-    return await new Promise((resolve, reject) => {
-      resolve(ret)
-    })
+    pilot = await repo.findOneBy({ id })
   } catch (error) {
     return await new Promise((resolve, reject) => {
       reject(new BackendError(ErrorType.ServerError, 'server error', error.message))
     })
   }
+  if (pilot === null) {
+    return await new Promise((resolve, reject) => {
+      return reject(new BackendError(ErrorType.NotFound, 'not found', `pilot with ${id} not exists in database`))
+    })
+  }
+
+  const ret = await repo.remove(pilot)
+  return await new Promise((resolve, reject) => {
+    resolve(ret)
+  })
 }
 
 export const update = async (id: number, pilot: Pilot): Promise<Pilot> => {
+  let pilotExists: Pilot | null = null
+  let idExists: Pilot | null = null
   try {
-    const pilotExists = await repo.findOneBy({ name: Like(`%${pilot.name}%`) })
+    pilotExists = await repo.findOneBy({ name: Like(`%${pilot.name}%`) })
+    idExists = await repo.findOneBy({ id })
+  } catch (error) {
+    return await new Promise((resolve, reject) => {
+      return reject(new BackendError(ErrorType.ServerError, 'server error', error.message))
+    })
+  }
 
-    if ((pilotExists != null) && pilotExists.id !== id) {
+  if ((pilotExists !== null) && pilotExists.id !== id) {
+    return await new Promise((resolve, reject) => {
+      return reject(new BackendError(ErrorType.AlreadyExists, 'already exists', `pilot with the name of ${pilot.name.toLowerCase()} already exists in database`))
+    })
+  }
+  if (idExists === null) {
+    return await new Promise((resolve, reject) => {
+      return reject(new BackendError(ErrorType.NotFound, 'not found', `pilot with id of ${id} not exists in database`))
+    })
+  }
+  idExists.name = pilot.name
+
+  let teamById: Team | null = null
+  if (pilot.team !== null && pilot.team.id > 0) {
+    try {
+      teamById = await teamRepo.getById(Number(pilot.team.id))
+    } catch (error) {
       return await new Promise((resolve, reject) => {
-        return reject(new BackendError(ErrorType.AlreadyExists, 'already exists', `pilot with the name of ${pilot.name.toLowerCase()} already exists in database`))
+        return reject(error)
       })
     }
-    const idExists: Pilot | null = await repo.findOneBy({ id })
-    if (idExists == null) {
-      return await new Promise((resolve, reject) => {
-        return reject(new BackendError(ErrorType.NotFound, 'not found', `pilot with id of ${id} not exists in database`))
-      })
-    }
-    idExists.name = pilot.name
+  }
 
-    let teamById: Team | null = null
-    if (pilot.team !== null && pilot.team.id > 0) {
-      try {
-        teamById = await teamRepo.getById(Number(pilot.team.id))
-      } catch (error) {
+  let teamByName: Team[] = []
+  if (pilot.team !== null && !(pilot.team.name === null || pilot.team.name === undefined)) {
+    try {
+      teamByName = await teamRepo.get(pilot.team.name)
+      if (teamByName.length > 1) {
+        return await new Promise((resolve, reject) => {
+          return reject(new BackendError(ErrorType.MultipleMatch, 'multiple match', `there is more than one team that matches the name of '${pilot.team.name}'`))
+        })
+      }
+      if (teamByName.length === 0) {
+        return await new Promise((resolve, reject) => {
+          return reject(new BackendError(ErrorType.NotFound, 'not found', `there is no team that match the name of ${pilot.team.name}`))
+        })
+      }
+    } catch (error) {
+      if (error.type === ErrorType.MultipleMatch) {
         return await new Promise((resolve, reject) => {
           return reject(error)
         })
       }
-    }
-
-    let teamByName: Team[] = []
-    if (pilot.team !== null && !(pilot.team.name === null || pilot.team.name === undefined)) {
-      try {
-        teamByName = await teamRepo.get(pilot.team.name)
-        if (teamByName.length > 1) {
-          return await new Promise((resolve, reject) => {
-            return reject(new BackendError(ErrorType.MultipleMatch, 'multiple match', `there is more than one team that matches the name of '${pilot.team.name}'`))
-          })
-        }
-        if (teamByName.length === 0) {
-          return await new Promise((resolve, reject) => {
-            return reject(new BackendError(ErrorType.NotFound, 'not found', `there is no team that match the name of ${pilot.team.name}`))
-          })
-        }
-      } catch (error) {
+      if (error.type === ErrorType.NotFound) {
         teamByName = [pilot.team] as Team[]
       }
     }
+  }
 
-    if (!(teamById === null || teamById === undefined) && !(teamByName[0] === null || teamByName[0] === undefined)) {
-      if ((teamByName[0].id !== teamById.id) || (teamByName[0].name !== teamById.name)) {
-        return await new Promise((resolve, reject) => {
-          return reject(new BackendError(ErrorType.IdMismatch, 'id mismatch', `the id from request body is belong to '${(teamById as Team).name}' but in request the name was: '${teamByName[0].name}'`))
-        })
-      }
+  if (!(teamById === null || teamById === undefined) && !(teamByName[0] === null || teamByName[0] === undefined)) {
+    if ((teamByName[0].id !== teamById.id) || (teamByName[0].name !== teamById.name)) {
+      return await new Promise((resolve, reject) => {
+        return reject(new BackendError(ErrorType.IdMismatch, 'id mismatch', `the id from request body is belong to '${(teamById as Team).name}' but in request the name was natching: '${teamByName[0].name}'`))
+      })
     }
+  }
 
-    if (!(teamById === null || teamById === undefined)) {
-      idExists.team = teamById
-    } else if (!(teamByName[0] === null || teamByName[0] === undefined)) {
-      idExists.team = teamByName[0]
-    } else {
-      idExists.team = pilot.team
-    }
+  if (!(teamById === null || teamById === undefined)) {
+    idExists.team = teamById
+  } else if (!(teamByName[0] === null || teamByName[0] === undefined)) {
+    idExists.team = teamByName[0]
+  } else {
+    idExists.team = pilot.team
+  }
 
-    await repo.save(idExists)
-    return await new Promise((resolve, reject) => {
-      resolve(idExists)
-    })
+  let ret: Pilot
+  try {
+    ret = await repo.save(idExists)
   } catch (error) {
     return await new Promise((resolve, reject) => {
-      reject(new BackendError(ErrorType.ServerError, 'server error', error.message))
+      return reject(new BackendError(ErrorType.ServerError, 'server error', error.message))
     })
   }
+
+  return await new Promise((resolve, reject) => {
+    resolve(ret)
+  })
 }

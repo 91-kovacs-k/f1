@@ -26,7 +26,7 @@
     "clear-docker-images": "docker rmi 91kovacsk/f1-mssql 91kovacsk/f1-be 91kovacsk/f1-fe",
     "remove-docker-network": "docker network rm f1_f1-net",
 
-    "be": "cd be && tsc && npm start",
+    "be": "cd be && npm start",
     "fe": "cd fe && npm start"
   },
   "repository": {

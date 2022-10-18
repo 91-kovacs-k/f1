@@ -10,7 +10,7 @@ pilotRouter.route('/')
       const data = await pilotRepo.get()
       return res.send(data)
     } catch (error) {
-      if (error.type === ErrorType.NotFound) {
+      if (error.type === ErrorType.NotFound || error.type === ErrorType.NoRecords) {
         return res.status(404).send(error)
       }
       return res.status(500).send(error)
@@ -22,8 +22,11 @@ pilotRouter.route('/')
         const ret = await pilotRepo.get(req.body.name, req.body.limit)
         return res.send(ret)
       } catch (error) {
-        if (error.type === ErrorType.NotFound) {
+        if (error.type === ErrorType.NotFound || error.type === ErrorType.NoRecords) {
           return res.status(404).send(error)
+        }
+        if (error.type === ErrorType.AlreadyExists || error.type === ErrorType.ArgumentError || error.type === ErrorType.IdMismatch || error.type === ErrorType.MultipleMatch) {
+          return res.status(400).send(error)
         }
         return res.status(500).send(error)
       }
@@ -33,12 +36,15 @@ pilotRouter.route('/')
     try {
       data = await pilotRepo.insert(req.body)
     } catch (error) {
-      if (error.type === ErrorType.AlreadyExists || error.type === ErrorType.MultipleMatch || error.type === ErrorType.IdMismatch || error.type === ErrorType.NotFound) {
+      if (error.type === ErrorType.AlreadyExists || error.type === ErrorType.MultipleMatch || error.type === ErrorType.IdMismatch || error.type === ErrorType.ArgumentError) {
         return res.status(400).send(error)
+      }
+      if (error.type === ErrorType.NoRecords || error.type === ErrorType.NotFound) {
+        return res.status(404).send(error)
       }
       return res.status(500).send(error)
     }
-    res.send(data)
+    return res.send(data)
   })
 
 pilotRouter.route('/:id')
@@ -70,13 +76,13 @@ pilotRouter.route('/:id')
       if (error.type === ErrorType.NotFound) {
         return res.status(404).send(error)
       }
-      if (error.type === ErrorType.AlreadyExists || error.type === ErrorType.IdMismatch || error.type === ErrorType.MultipleMatch || error.type === ErrorType.NotFound) {
+      if (error.type === ErrorType.AlreadyExists || error.type === ErrorType.IdMismatch || error.type === ErrorType.MultipleMatch) {
         return res.status(400).send(error)
       }
       return res.status(500).send(error)
     }
 
-    return res.send(data)
+    res.send(data)
   })
   .delete(async (req, res) => {
     const id = Number(req.params.id)
@@ -89,5 +95,5 @@ pilotRouter.route('/:id')
       }
       return res.status(500).send(error)
     }
-    res.send(data)
+    return res.send(data)
   })
