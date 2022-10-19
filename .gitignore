@@ -1,3 +1,9 @@
-be/node_modules/*
-be/dist/*
-fe/node_modules/*
+be/node_modules/
+be/dist/
+be/package-lock.json
+fe/node_modules/
+fe/dist/
+fe/package-lock.json
+.env
+.vscode/
+package-lock.json

@@ -1,19 +1,25 @@
-import React from 'react'
+import { Link } from "react-router-dom";
 
 export default function Header({ toggleSite }) {
-
-
-    return (
-        <div className='header'>
-            <button className='logo' onClick={() => toggleSite(0)}><h2>F1</h2></button>
-            <div className='menu'>
-                <ul>
-                    <li><button onClick={() => toggleSite(1)}>Get Teams</button></li>
-                    <li><button onClick={() => toggleSite(2)}>Add Team</button></li>
-                    <li><button onClick={() => toggleSite(3)}>Get Pilots</button></li>
-                    <li><button onClick={() => toggleSite(4)}>Add Pilot</button></li>
-                </ul>
-            </div>
-        </div>
-    )
+  return (
+    <div className="header">
+      <Link className="logo" to="/">
+        <h2>F1</h2>
+      </Link>
+      <div className="menu">
+        <ul>
+          <li>
+            <Link className="button" to="/teams">
+              Teams
+            </Link>
+          </li>
+          <li>
+            <Link className="button" to="/pilots">
+              Pilots
+            </Link>
+          </li>
+        </ul>
+      </div>
+    </div>
+  );
 }
