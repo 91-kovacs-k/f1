@@ -1,7 +1,6 @@
 import { Router } from 'express'
-import { BackendError, ErrorType } from '../utils/error'
-
-import * as teamRepo from '../repos/teamRepo'
+import { BackendError, ErrorType } from '../utils/error.js'
+import * as teamRepo from '../repos/teamRepo.js'
 
 export const teamRouter = Router()
 

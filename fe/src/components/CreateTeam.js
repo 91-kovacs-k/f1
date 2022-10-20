@@ -1,64 +1,62 @@
-import React from 'react'
+import { useState } from "react";
+import { Navigate } from "react-router-dom";
+import { createTeam } from "./utils";
 
 export default function CreateTeam() {
-    const [formData, setFormData] = React.useState({
-        teamName: ""
-    })
-    const [res, setRes] = React.useState('')
+  const [formData, setFormData] = useState({
+    teamName: "",
+  });
+  const [response, setResponse] = useState("");
+  const [redirect, setRedirect] = useState(false);
 
-    function handleChange(event) {
-        const { name, value } = event.target
-        setFormData(prevFormData => ({
-            ...prevFormData,
-            [name]: value
-        }))
+  function handleChange(event) {
+    const { name, value } = event.target;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  }
+
+  async function submit(event) {
+    event.preventDefault();
+    if (formData.teamName === "") {
+      return;
     }
 
-    async function submit(event) {
-        event.preventDefault()
-        if (formData.teamName === "") {
-            return
-        }
-        const response = await fetch("http://localhost:4000/api/team", {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ name: formData.teamName.trimStart().trimEnd() })
-        });
+    const data = await createTeam(formData.teamName.trimStart().trimEnd());
 
-        const data = await response.json();
-
-        if (!response.ok) {
-            setRes(`Error while creating team: ${data.reason}`)
-            throw new Error(`Error while deleting: ${data}`)
-        }
-
-        if (data) {
-            setRes(`${formData.teamName} successfully created.`)
-        }
-        setFormData({
-            teamName: ""
-        })
+    if (data.reason) {
+      setResponse(`Error while creating team: ${data.reason}`);
+    } else {
+      setResponse(`${formData.teamName} successfully created. Redirecting...`);
+      setTimeout(() => setRedirect(true), 2000);
     }
+    setFormData({
+      teamName: "",
+    });
+  }
 
+  if (redirect) {
+    return <Navigate to="/teams" />;
+  } else {
     return (
-        <div className='createTeam'>
-            {res ?
-                <p class="response">{res}</p>
-                :
-                <form>
-                    <input
-                        type="text"
-                        id="teamName"
-                        name="teamName"
-                        placeholder="Team Name"
-                        value={formData.teamName}
-                        onChange={handleChange}
-                    />
-                    <button onClick={submit}>Create team</button>
-                </form>
-            }
-        </div>
-    )
+      <div className="createTeam">
+        {response ? (
+          <p className="response">{response}</p>
+        ) : (
+          <form>
+            <input
+              type="text"
+              id="teamName"
+              name="teamName"
+              placeholder="Team Name"
+              value={formData.teamName}
+              onChange={handleChange}
+            />
+            <button onClick={submit}>Create Team</button>
+          </form>
+        )}
+      </div>
+    );
+  }
 }

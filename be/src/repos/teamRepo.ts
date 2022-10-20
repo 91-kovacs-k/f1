@@ -1,7 +1,7 @@
-import { Team } from '../entity/Team'
-import { AppDataSource } from '../data-source'
+import { Team } from '../entity/Team.js'
+import { AppDataSource } from '../data-source.js'
 import { Like } from 'typeorm'
-import { ErrorType, BackendError } from '../utils/error'
+import { ErrorType, BackendError } from '../utils/error.js'
 
 const repo = AppDataSource.getRepository(Team)
 

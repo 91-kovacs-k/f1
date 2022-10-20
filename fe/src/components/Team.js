@@ -1,195 +1,115 @@
-import React from 'react';
-import UpdateTeam from './UpdateTeam'
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { getTeams, getTeam, deleteTeam } from "./utils";
 
 export default function Team(params) {
-    const [teams, setTeams] = React.useState([]);
-    const [formData, setFormData] = React.useState({
-        teamSearch: ""
-    });
-    const [update, setUpdate] = React.useState()
+  const [teams, setTeams] = useState([]);
+  const [formData, setFormData] = useState({
+    teamSearch: "",
+  });
+  const [response, setResponse] = useState("");
 
-    React.useEffect(() => {
-        getTeams()
-    }, [])
+  useEffect(() => {
+    load();
+  }, []);
 
-    async function getTeams() {
-        const response = await fetch("http://localhost:4000/api/team", {
-            method: "GET",
-        });
-        const data = await response.json();
-
-        if (!response.ok) {
-            if (response.status === 404) {
-                await setTeams([{ id: 0, name: `Error while loading teams: ${data.reason}` }])
-                setFormData({ teamSearch: "" })
-                return
-            }
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        await setTeams(data);
+  const load = async () => {
+    const data = await getTeams();
+    if (data.reason) {
+      setResponse(`Error while loading teams: ${data.reason}`);
+      setFormData({ teamSearch: "" });
+      return;
     }
+    setTeams(data);
+  };
 
-    async function getTeam(event) {
-        event.preventDefault()
-        const searchTerm = formData.teamSearch.trimStart().trimEnd()
+  const changeHandler = (event) => {
+    const { name, value } = event.target;
 
-        if (searchTerm === '' || searchTerm === undefined || searchTerm === null) {
-            return getTeams()
-        }
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  };
 
-        if (!isNaN(+searchTerm)) {
-            const response = await fetch(`http://localhost:4000/api/team/${searchTerm}`,
-                {
-                    method: 'GET'
+  teams.sort((a, b) => {
+    if (a.name < b.name) {
+      return -1;
+    }
+    if (a.name > b.name) {
+      return 1;
+    }
+    return 0;
+  });
+
+  return (
+    <>
+      <div className="row">
+        <Link className="button" to="/createteam">
+          Add Team
+        </Link>
+        <div className="search">
+          <form>
+            <input
+              type="text"
+              name="teamSearch"
+              id="teamSearch"
+              value={formData.teamSearch}
+              placeholder="Team ID or Name"
+              onChange={changeHandler}
+            />
+            <button
+              onClick={async (event) => {
+                event.preventDefault();
+                const data = await getTeam(
+                  formData.teamSearch.trimStart().trimEnd().toLowerCase()
+                );
+                if (data.reason) {
+                  setResponse(`Error while loading team: ${data.reason}`);
+                } else if (Array.isArray(data)) {
+                  setTeams(data);
+                  setResponse("");
+                } else {
+                  setTeams([data]);
+                  setResponse("");
                 }
-            )
 
-            if (!response.ok) {
-                if (response.status === 404) {
-                    await setTeams([{ id: 0, name: `no team with id of ${searchTerm}` }])
-                    setFormData(
-                        {
-                            teamSearch: ""
-                        }
-                    )
-                    return
-                }
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+                setFormData({ teamSearch: "" });
+              }}
+            >
+              Get Team
+            </button>
+          </form>
+        </div>
+      </div>
 
-            const data = await response.json();
-            await setTeams([data])
-        } else {
-            const response = await fetch(`http://localhost:4000/api/team/`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ type: 'search', name: searchTerm, limit: 0 })
-                }
-            )
-
-            if (!response.ok) {
-                if (response.status === 404) {
-                    await setTeams([{ id: 0, name: `no team with name of ${searchTerm}` }])
-                    setFormData(
-                        {
-                            teamSearch: ""
-                        }
-                    )
-                    return
-                }
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            await setTeams(data)
-        }
-
-        setFormData(
-            {
-                teamSearch: ""
-            }
-        )
-    }
-
-    async function deleteTeam(id) {
-        const response = await fetch(`http://localhost:4000/api/team/${id}`,
-            {
-                method: 'DELETE'
-            }
-        )
-
-        if (!response.ok) {
-            if (response.status === 404) {
-                await setTeams([{ id: 0, name: `no team with the id of ${id}` }])
-                setFormData({ teamSearch: "" })
-                return
-            }
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        if (data) {
-            await getTeams()
-        } else {
-            throw new Error(`Error while deleting: ${data}`)
-        }
-    }
-
-    function toggleUpdate(team) {
-        setUpdate(team)
-    }
-
-    function changeHandler(event) {
-        const { name, value } = event.target
-
-        setFormData(prevFormData => ({
-            ...prevFormData,
-            [name]: value
-        }))
-    }
-
-    function renderUpdate() {
-        return <UpdateTeam team={update} />
-    }
-
-    function renderTeams() {
-        return (
-            <>
-
-                {teamElements}
-            </>
-        )
-    }
-
-    teams.sort((a, b) => {
-        if (a.name < b.name) { return -1; }
-        if (a.name > b.name) { return 1; }
-        return 0;
-    })
-    const teamElements = teams.map(team => {
-        if (team.id !== 0) {
-            return (
-                <div className="teamItem" key={team.id}>
-                    <span>{team.name}</span>
-                    <button onClick={() => toggleUpdate(team)}>Update</button>
-                    <button className="delete" onClick={() => deleteTeam(team.id)}>Delete</button>
-                </div>
-            )
-        } else {
-            return (
-                <p className='response'>{team.name}</p>
-            )
-        }
-    })
-
-
-    return (
-        <>
-            {update ? "" :
-                <div className='search'>
-                    <form>
-                        <input
-                            type="text"
-                            name="teamSearch"
-                            id="teamSearch"
-                            value={formData.teamSearch}
-                            placeholder="Team ID or Name"
-                            onChange={changeHandler}
-                        />
-                        <button onClick={getTeam}>Get team</button>
-                    </form>
-                </div>
-            }
-
-            <div className="team">
-                <div className='teamBox'>
-                    {update ? renderUpdate() : (teams && renderTeams())}
-                </div>
+      {response === "" ? (
+        teams.map((team) => {
+          return (
+            <div className="teamItem" key={team.id}>
+              <span>{team.name}</span>
+              <Link className="button" to={`/team/${team.id}`}>
+                Update
+              </Link>
+              <Link
+                className="button delete"
+                onClick={async () => {
+                  const data = await deleteTeam(team.id);
+                  if (data.reason) {
+                    setResponse(`Error while deleting team: ${data.reason}`);
+                  } else {
+                    await load();
+                  }
+                }}
+              >
+                Delete
+              </Link>
             </div>
-        </>
-    );
+          );
+        })
+      ) : (
+        <p className="response">{response}</p>
+      )}
+    </>
+  );
 }

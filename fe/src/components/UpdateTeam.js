@@ -1,64 +1,78 @@
-import React from 'react'
+import { useEffect, useState } from "react";
+import { useParams, Navigate } from "react-router-dom";
+import { updateTeam, getTeam } from "./utils";
 
-export default function UpdateTeam(params) {
-    const [formData, setFormData] = React.useState({
-        teamName: params.team.name
-    })
-    const [res, setRes] = React.useState('')
+export default function UpdateTeam() {
+  const [formData, setFormData] = useState({
+    teamName: "",
+  });
+  const [team, setTeam] = useState({
+    id: 0,
+    name: "",
+  });
+  const [response, setResponse] = useState("");
+  const { id } = useParams();
+  const [redirect, setRedirect] = useState(false);
 
-    async function submit(event) {
-        event.preventDefault()
-        const response = await fetch(`http://localhost:4000/api/team/${params.team.id}`,
-            {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ id: params.team.id, name: formData.teamName.trimStart().trimEnd() })
-            }
-        )
-        const data = await response.json();
+  useEffect(() => {
+    load(+id);
+  }, []);
 
-        if (!response.ok) {
-            setRes(`Error while updating team: ${data.reason}`)
-            //throw new Error(`HTTP error! status: ${response.error}`);
-        } else if (data) {
-
-            setRes(`${formData.teamName} successfully updated.`)
-            setFormData({
-                teamName: ""
-            })
-        } else {
-            throw new Error(`HTTP error! status: ${response.error}`);
-        }
+  const load = async (id) => {
+    const data = await getTeam(+id);
+    if (data.reason) {
+      setResponse(`Error while loading team: ${data.reason}.`);
+      return;
     }
+    setTeam(data);
+    setFormData({ teamName: data.name });
+  };
 
-    function changeHandler(event) {
-        const { name, value } = event.target
-
-        setFormData(prevFormData => ({
-            ...prevFormData,
-            [name]: value
-        }))
+  async function submit(event) {
+    event.preventDefault();
+    const data = await updateTeam(+id, formData.teamName.trimStart().trimEnd());
+    if (data.reason) {
+      setResponse(`Error while updating team: ${data.reason}.`);
+      return;
     }
+    setResponse(
+      `Team successfully updated to '${formData.teamName
+        .trimStart()
+        .trimEnd()}'.  Redirecting...`
+    );
+    setTimeout(() => setRedirect(true), 2000);
+  }
 
+  function changeHandler(event) {
+    const { name, value } = event.target;
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  }
+
+  if (redirect) {
+    return <Navigate to="/teams" />;
+  } else {
     return (
-        <div className='updateTeam'>
-            {res ?
-                <p class="response dark">{res}</p>
-                :
-                <form>
-                    <input
-                        type="text"
-                        name="teamName"
-                        id="teamName"
-                        onChange={changeHandler}
-                        placeholder={params.team.name}
-                        value={formData.teamName}
-                    />
-                    <button onClick={submit}>Submit update</button>
-                </form>
-            }
-        </div>
-    )
+      <div className="updateTeam">
+        {response ? (
+          <p class="response">{response}</p>
+        ) : (
+          <form>
+            <input
+              type="text"
+              name="teamName"
+              id="teamName"
+              onChange={changeHandler}
+              placeholder={team.name}
+              value={formData.teamName}
+            />
+            <button onClick={submit}>Submit update</button>
+          </form>
+        )}
+      </div>
+    );
+  }
 }

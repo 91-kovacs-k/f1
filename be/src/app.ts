@@ -1,8 +1,8 @@
 import express from 'express'
 import bodyParser from 'body-parser'
 import cors from 'cors'
-import { teamRouter } from './routers/teamRouter'
-import { pilotRouter } from './routers/pilotRouter'
+import { teamRouter } from './routers/teamRouter.js'
+import { pilotRouter } from './routers/pilotRouter.js'
 
 const app = express()
 

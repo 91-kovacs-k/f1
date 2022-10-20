@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { DataSource } from 'typeorm'
-import { Pilot } from './entity/Pilot'
-import { Team } from './entity/Team'
+import { Pilot } from './entity/Pilot.js'
+import { Team } from './entity/Team.js'
 
 const mssqlHost = process.env.NODE_DBHOST
 

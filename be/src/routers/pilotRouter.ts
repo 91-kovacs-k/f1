@@ -1,6 +1,6 @@
 import { Router } from 'express'
-import * as pilotRepo from '../repos/pilotRepo'
-import { BackendError, ErrorType } from '../utils/error'
+import * as pilotRepo from '../repos/pilotRepo.js'
+import { BackendError, ErrorType } from '../utils/error.js'
 
 export const pilotRouter = Router()
 

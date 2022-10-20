@@ -1,9 +1,9 @@
-import { Pilot } from '../entity/Pilot'
-import { AppDataSource } from '../data-source'
+import { Pilot } from '../entity/Pilot.js'
+import { AppDataSource } from '../data-source.js'
 import { Like } from 'typeorm'
-import * as teamRepo from './teamRepo'
-import { ErrorType, BackendError } from '../utils/error'
-import { Team } from '../entity/Team'
+import * as teamRepo from './teamRepo.js'
+import { ErrorType, BackendError } from '../utils/error.js'
+import { Team } from '../entity/Team.js'
 
 const repo = AppDataSource.getRepository(Pilot)
 

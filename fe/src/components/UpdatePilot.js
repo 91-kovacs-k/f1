@@ -1,81 +1,104 @@
-import React from 'react'
+import { useState, useEffect } from "react";
+import { useParams, Navigate } from "react-router-dom";
+import { getPilot, updatePilot } from "./utils";
 
 export default function UpdatePilot(params) {
-    const [formData, setFormData] = React.useState({
-        pilotName: params.pilot.name,
-        pilotTeam: params.pilot.team?.name || ""
-    })
-    const [res, setRes] = React.useState('')
+  const [formData, setFormData] = useState({
+    pilotName: "",
+    pilotTeam: "",
+  });
+  const [pilot, setPilot] = useState({
+    id: 0,
+    name: "",
+    team: {
+      id: 0,
+      name: "",
+    },
+  });
+  const [response, setResponse] = useState("");
+  const { id } = useParams();
+  const [redirect, setRedirect] = useState(false);
 
-    async function submit(event) {
-        event.preventDefault()
-        const team = formData.pilotTeam.trimStart().trimEnd().toLowerCase()
-        const body = team === "n/a" || team === "na" || team === "" ?
-            JSON.stringify({ id: params.pilot.id, name: formData.pilotName, team: null }) :
-            JSON.stringify({ id: params.pilot.id, name: formData.pilotName, team: { name: formData.pilotTeam } })
+  useEffect(() => {
+    load(+id);
+  }, [id]);
 
-        const response = await fetch(`http://localhost:4000/api/pilot/${params.pilot.id}`,
-            {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: body
-            }
-        )
-        const data = await response.json();
-
-        if (!response.ok) {
-            setRes(`Error when updating pilot: ${data.reason}`)
-            //throw new Error(`HTTP error! status: ${response.error}`);
-        } else if (data) {
-
-            setRes(`${formData.pilotName} successfully updated.`)
-            setFormData({
-                pilotName: "",
-                pilotTeam: ""
-            })
-        } else {
-            throw new Error(`HTTP error! status: ${response.error}`);
-        }
+  const load = async (id) => {
+    const data = await getPilot(+id);
+    if (data.reason) {
+      setResponse(`Error while loading pilot: ${data.reason}.`);
+      return;
     }
+    setPilot(data);
+    setFormData({ pilotName: data.name, pilotTeam: data.team?.name });
+  };
 
-    function changeHandler(event) {
-        const { name, value } = event.target
-
-        setFormData(prevFormData => ({
-            ...prevFormData,
-            [name]: value
-        }))
+  const submit = async (event) => {
+    event.preventDefault();
+    const pilotName = formData.pilotName.trimStart().trimEnd();
+    const teamName = formData.pilotTeam?.trimStart().trimEnd() || "";
+    const body =
+      teamName?.toLowerCase() === "n/a" || teamName === "na" || teamName === ""
+        ? JSON.stringify({
+            id: +id,
+            name: pilotName,
+            team: null,
+          })
+        : JSON.stringify({
+            id: +id,
+            name: pilotName,
+            team: { name: teamName },
+          });
+    const data = await updatePilot(body);
+    console.log(data);
+    if (data.reason) {
+      setResponse(`Error while updating pilot: ${data.reason}`);
+    } else {
+      setResponse(`Pilot successfully updated. Redirecting...`);
+      setTimeout(() => setRedirect(true), 2000);
     }
+  };
 
+  function changeHandler(event) {
+    const { name, value } = event.target;
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  }
+
+  if (redirect) {
+    return <Navigate to="/pilots" />;
+  } else {
     return (
-        <div className='updatePilot'>
-            {res ?
-                <p className="response">{res}</p>
-                :
-                <form>
-                    <div className="inputs">
-                        <input
-                            type="text"
-                            name="pilotName"
-                            id="pilotName"
-                            onChange={changeHandler}
-                            placeholder={params.pilot.name}
-                            value={formData.pilotName}
-                        />
-                        <input
-                            type="text"
-                            name="pilotTeam"
-                            id="pilotTeam"
-                            onChange={changeHandler}
-                            placeholder={params.pilot.team?.name || "Team Name"}
-                            value={formData.pilotTeam}
-                        />
-                    </div>
-                    <button onClick={submit}>Submit update</button>
-                </form>
-            }
-        </div>
-    )
+      <div className="updatePilot">
+        {response ? (
+          <p className="response">{response}</p>
+        ) : (
+          <form>
+            <div className="inputs">
+              <input
+                type="text"
+                name="pilotName"
+                id="pilotName"
+                onChange={changeHandler}
+                placeholder={pilot.name}
+                value={formData.pilotName}
+              />
+              <input
+                type="text"
+                name="pilotTeam"
+                id="pilotTeam"
+                onChange={changeHandler}
+                placeholder={pilot.team?.name || "N/A"}
+                value={formData.pilotTeam}
+              />
+            </div>
+            <button onClick={submit}>Submit update</button>
+          </form>
+        )}
+      </div>
+    );
+  }
 }

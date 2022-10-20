@@ -63,7 +63,7 @@ ul{
 }
 
 .button{
-    padding: 0.25rem 2rem;
+    padding: 0.0625rem 1rem;
     background-color: #B2BEBF;
     border:  1px solid #3B3936;
     color: #3B3936;
@@ -72,6 +72,9 @@ ul{
     box-shadow: 2px 2px 5px #3B3936;
     border-radius: 5px;
     border:  1px solid #3B3936;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .button:hover{
@@ -119,8 +122,24 @@ input{
     box-shadow: 2px 2px 5px #3B3936;
 }
 
-.search{
+.row{
+    display: flex;
+    align-items: center;
     margin-top: 1rem;
+}
+
+.row > .button{
+    margin-right: auto;
+    margin-left: 1rem;
+    width: 10rem;
+    height: 3rem;
+    text-align: center;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    box-shadow: 2px 2px 5px #3B3936;
+}
+
+.search{
     display: flex;
     justify-content: flex-end;
 }
@@ -175,6 +194,7 @@ input{
     flex-flow: row wrap;
     align-items: center;
     box-shadow: 2px 2px 5px #3B3936;
+    gap: 1rem;
 }
 
 .teamItem > span{
@@ -303,6 +323,7 @@ input{
     flex-flow: row wrap;
     align-items: center;
     box-shadow: 2px 2px 5px #3B3936;
+    gap: 1rem;
 }
 
 .pilotItem > span{
@@ -326,6 +347,11 @@ input{
 
 .pilotItem > .delete:hover{
     background-color:crimson;
+}
+
+.updatePilot > form{
+    display: flex;
+    justify-content: center;
 }
 
 .updatePilot > form > .inputs > input {

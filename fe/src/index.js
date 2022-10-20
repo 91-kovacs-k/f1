@@ -7,6 +7,10 @@ import Team from "./components/Team";
 import Pilot from "./components/Pilot";
 import Header from "./components/Header";
 import reportWebVitals from "./reportWebVitals";
+import UpdatePilot from "./components/UpdatePilot";
+import UpdateTeam from "./components/UpdateTeam";
+import CreateTeam from "./components/CreateTeam";
+import CreatePilot from "./components/CreatePilot";
 
 const root = createRoot(document.getElementById("root"));
 root.render(
@@ -16,8 +20,12 @@ root.render(
         <BrowserRouter>
           <Header />
           <Routes>
-            <Route path="/teams" element={<Team />}></Route>
-            <Route path="/pilots" element={<Pilot />}></Route>
+            <Route path="/teams" element={<Team />} />
+            <Route path="/team/:id" element={<UpdateTeam />} />
+            <Route path="/createteam/" element={<CreateTeam />} />
+            <Route path="/pilots" element={<Pilot />} />
+            <Route path="/pilot/:id" element={<UpdatePilot />} />
+            <Route path="/createpilot" element={<CreatePilot />} />
             <Route path="/" element={<App />}></Route>
           </Routes>
         </BrowserRouter>
