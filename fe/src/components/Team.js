@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getTeams, getTeam, deleteTeam } from "./utils";
+import Modal from "../Modal";
 
 export default function Team(params) {
   const [teams, setTeams] = useState([]);
@@ -8,6 +9,8 @@ export default function Team(params) {
     teamSearch: "",
   });
   const [response, setResponse] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState();
 
   useEffect(() => {
     load();
@@ -30,6 +33,40 @@ export default function Team(params) {
       ...prevFormData,
       [name]: value,
     }));
+  };
+
+  const toggleModal = () => {
+    setShowModal((prevShowModal) => !prevShowModal);
+  };
+
+  const renderModal = () => {
+    return (
+      <Modal onClick={toggleModal}>
+        <div>
+          <h1 className="msg">Would you like to delete {selectedTeam.name}?</h1>
+          <div className="buttons">
+            <Link
+              className="button delete"
+              onClick={async () => {
+                const data = await deleteTeam(selectedTeam.id);
+                if (data.reason) {
+                  toggleModal();
+                  setResponse(`Error while deleting team: ${data.reason}`);
+                } else {
+                  await load();
+                  toggleModal();
+                }
+              }}
+            >
+              Yes
+            </Link>
+            <button className="button" onClick={toggleModal}>
+              No
+            </button>
+          </div>
+        </div>
+      </Modal>
+    );
   };
 
   teams.sort((a, b) => {
@@ -91,25 +128,22 @@ export default function Team(params) {
               <Link className="button" to={`/team/${team.id}`}>
                 Update
               </Link>
-              <Link
+              <button
                 className="button delete"
-                onClick={async () => {
-                  const data = await deleteTeam(team.id);
-                  if (data.reason) {
-                    setResponse(`Error while deleting team: ${data.reason}`);
-                  } else {
-                    await load();
-                  }
+                onClick={() => {
+                  toggleModal();
+                  setSelectedTeam(team);
                 }}
               >
                 Delete
-              </Link>
+              </button>
             </div>
           );
         })
       ) : (
         <p className="response">{response}</p>
       )}
+      {showModal ? renderModal() : null}
     </>
   );
 }

@@ -18,6 +18,64 @@ body{
     padding: 0;
 }
 
+.msg{
+    text-shadow: 2px 2px 5px #3B3936;
+}
+
+.innerModal{
+    background-color: #486966;
+    font-size: 1rem;
+    border: #333 1px solid;
+    border-radius: 5px;
+    display: block;
+    margin: 0 auto;
+}
+
+.innerModal .buttons > .button{
+    width: 5rem;
+}
+
+.innerModal .buttons > .delete:hover {
+    background-color: crimson;
+}
+
+#modal .buttons{
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+#modal{
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    z-index: 10;
+}
+  
+#modal:empty {
+display: none;
+}
+
+.innerModal{
+    height: 100vh;
+    width: 100vw;
+    background-color: rgba(0, 0, 0, 0.9);
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+  
+.innerModal > div {
+max-width: 60rem;
+padding: 1rem;
+text-align: center;
+border-radius: 30px;
+background: #486966;
+}
+
 .header{
     padding: 1rem;
     background: #486966;
@@ -299,6 +357,7 @@ input{
     font-size: 3rem;
     text-align: center;
     padding: 5rem;
+    text-shadow: 2px 2px 5px #3B3936;
 }
 
 .dark{

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getPilots, getPilot, deletePilot } from "./utils";
 import { Link } from "react-router-dom";
+import Modal from "../Modal";
 
 export default function Pilot() {
   const [pilots, setPilots] = useState([]);
@@ -8,6 +9,8 @@ export default function Pilot() {
     pilotSearch: "",
   });
   const [response, setResponse] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [selectedPilot, setSelectedPilot] = useState();
 
   useEffect(() => {
     load();
@@ -30,6 +33,42 @@ export default function Pilot() {
       ...prevFormData,
       [name]: value,
     }));
+  };
+
+  const toggleModal = () => {
+    setShowModal((prevShowModal) => !prevShowModal);
+  };
+
+  const renderModal = () => {
+    return (
+      <Modal onClick={toggleModal}>
+        <div>
+          <h1 className="msg">
+            Would you like to delete {selectedPilot.name}?
+          </h1>
+          <div className="buttons">
+            <Link
+              className="button delete"
+              onClick={async () => {
+                const data = await deletePilot(selectedPilot.id);
+                if (data.reason) {
+                  toggleModal();
+                  setResponse(`Error while deleting pilot: ${data.reason}`);
+                } else {
+                  await load();
+                  toggleModal();
+                }
+              }}
+            >
+              Yes
+            </Link>
+            <button className="button" onClick={toggleModal}>
+              No
+            </button>
+          </div>
+        </div>
+      </Modal>
+    );
   };
 
   pilots.sort((a, b) => {
@@ -83,8 +122,8 @@ export default function Pilot() {
       {response === "" ? (
         pilots.map((pilot) => {
           return (
-            <div className="pilotItem">
-              <span key={pilot.id}>
+            <div className="pilotItem" key={pilot.id}>
+              <span>
                 {pilot.name}
                 {pilot.id === 0 ? "" : `, Team: ${pilot.team?.name || "N/A"}`}
               </span>
@@ -93,13 +132,9 @@ export default function Pilot() {
               </Link>
               <button
                 className="button delete"
-                onClick={async () => {
-                  const data = await deletePilot(pilot.id);
-                  if (data.reason) {
-                    setResponse(`Error while deleting pilot: ${data.reason}`);
-                  } else {
-                    await load();
-                  }
+                onClick={() => {
+                  toggleModal();
+                  setSelectedPilot(pilot);
                 }}
               >
                 Delete
@@ -110,6 +145,7 @@ export default function Pilot() {
       ) : (
         <p className="response">{response}</p>
       )}
+      {showModal ? renderModal() : null}
     </>
   );
 }

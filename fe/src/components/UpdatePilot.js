@@ -50,7 +50,6 @@ export default function UpdatePilot(params) {
             team: { name: teamName },
           });
     const data = await updatePilot(body);
-    console.log(data);
     if (data.reason) {
       setResponse(`Error while updating pilot: ${data.reason}`);
     } else {
