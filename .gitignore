@@ -4,6 +4,7 @@ be/package-lock.json
 fe/node_modules/
 fe/dist/
 fe/package-lock.json
+data/f1-data/
 .env
 .vscode/
 package-lock.json
