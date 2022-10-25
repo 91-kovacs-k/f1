@@ -1,33 +1,41 @@
 import { useState, useEffect } from "react";
-import { getPilots, getPilot, deletePilot } from "./utils";
 import { Link } from "react-router-dom";
+import {
+  getPilots,
+  getPilot,
+  deletePilot,
+  Pilot as PilotType,
+  BackendError,
+} from "./utils";
 import Modal from "../Modal";
 
-export default function Pilot() {
-  const [pilots, setPilots] = useState([]);
+export default function Pilot(): JSX.Element {
+  const [pilots, setPilots] = useState([] as PilotType[]);
   const [formData, setFormData] = useState({
     pilotSearch: "",
   });
   const [response, setResponse] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [selectedPilot, setSelectedPilot] = useState();
+  const [selectedPilot, setSelectedPilot] = useState({} as PilotType);
 
   useEffect(() => {
-    load();
+    void load();
   }, []);
 
-  const load = async () => {
+  const load = async (): Promise<void> => {
     const data = await getPilots();
-    if (data.reason) {
-      setResponse(`Error while loading pilots: ${data.reason}`);
-      setFormData({ teamSearch: "" });
+    if ((data as BackendError).reason) {
+      setResponse(
+        `Error while loading pilots: ${(data as BackendError).reason}`
+      );
+      setFormData({ pilotSearch: "" });
       return;
     }
-    setPilots(data);
+    setPilots(data as PilotType[]);
   };
 
-  const changeHandler = (event) => {
-    const { name, value } = event.target;
+  const changeHandler = (event: React.FormEvent<HTMLInputElement>): void => {
+    const { name, value } = event.currentTarget;
 
     setFormData((prevFormData) => ({
       ...prevFormData,
@@ -35,11 +43,41 @@ export default function Pilot() {
     }));
   };
 
-  const toggleModal = () => {
+  const toggleModal = (): void => {
     setShowModal((prevShowModal) => !prevShowModal);
   };
 
-  const renderModal = () => {
+  const onDelete = async () => {
+    const data = await deletePilot(selectedPilot.id);
+    if ((data as BackendError).reason) {
+      toggleModal();
+      setResponse(
+        `Error while deleting pilot: ${(data as BackendError).reason}`
+      );
+    } else {
+      await load();
+      toggleModal();
+    }
+  };
+
+  const onGet = async (event: React.SyntheticEvent): Promise<void> => {
+    event.preventDefault();
+    const data = await getPilot(formData.pilotSearch);
+    if ((data as BackendError).reason) {
+      setResponse(
+        `Error while loading pilot: ${(data as BackendError).reason}`
+      );
+    } else if (Array.isArray(data)) {
+      setPilots(data);
+      setResponse("");
+    } else {
+      setPilots([data as unknown as PilotType]);
+      setResponse("");
+    }
+    setFormData({ pilotSearch: "" });
+  };
+
+  const renderModal = (): JSX.Element => {
     return (
       <Modal onClick={toggleModal}>
         <div>
@@ -47,21 +85,9 @@ export default function Pilot() {
             Would you like to delete {selectedPilot.name}?
           </h1>
           <div className="buttons">
-            <Link
-              className="button delete"
-              onClick={async () => {
-                const data = await deletePilot(selectedPilot.id);
-                if (data.reason) {
-                  toggleModal();
-                  setResponse(`Error while deleting pilot: ${data.reason}`);
-                } else {
-                  await load();
-                  toggleModal();
-                }
-              }}
-            >
+            <button className="button delete" onClick={() => void onDelete()}>
               Yes
-            </Link>
+            </button>
             <button className="button" onClick={toggleModal}>
               No
             </button>
@@ -98,19 +124,8 @@ export default function Pilot() {
               onChange={changeHandler}
             />
             <button
-              onClick={async (event) => {
-                event.preventDefault();
-                const data = await getPilot(formData.pilotSearch);
-                if (data.reason) {
-                  setResponse(`Error while loading pilot: ${data.reason}`);
-                } else if (Array.isArray(data)) {
-                  setPilots(data);
-                  setResponse("");
-                } else {
-                  setPilots([data]);
-                  setResponse("");
-                }
-                setFormData({ pilotSearch: "" });
+              onClick={(event) => {
+                void onGet(event);
               }}
             >
               Get Pilot

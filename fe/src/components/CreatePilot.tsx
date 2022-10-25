@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { createPilot } from "./utils";
 import { Navigate } from "react-router-dom";
+import { BackendError, createPilot } from "./utils";
 
-export default function CreatePilot() {
+export default function CreatePilot(): JSX.Element {
   const [formData, setFormData] = useState({
     pilotName: "",
     pilotTeam: "",
@@ -10,15 +10,15 @@ export default function CreatePilot() {
   const [response, setResponse] = useState("");
   const [redirect, setRedirect] = useState(false);
 
-  function handleChange(event) {
-    const { name, value } = event.target;
+  function handleChange(event: React.FormEvent<HTMLInputElement>): void {
+    const { name, value } = event.currentTarget;
     setFormData((prevFormData) => ({
       ...prevFormData,
       [name]: value,
     }));
   }
 
-  async function submit(event) {
+  async function submit(event: React.SyntheticEvent): Promise<void> {
     event.preventDefault();
     if (formData.pilotName === "") {
       return;
@@ -26,15 +26,19 @@ export default function CreatePilot() {
     const pilot = formData.pilotName.trimStart().trimEnd();
     const team = formData.pilotTeam.trimStart().trimEnd();
     const body =
-      team.toLowerCase() === "n/a" || team === "na" || team === ""
+      team.toLowerCase() === "n/a" ||
+      team.toLowerCase() === "na" ||
+      team.toLowerCase() === ""
         ? JSON.stringify({ name: pilot })
         : JSON.stringify({ name: pilot, team: { name: team } });
     const data = await createPilot(body);
-    if (data.reason) {
-      setResponse(`Error while creating pilot: ${data.reason}`);
+    if ((data as BackendError).reason) {
+      setResponse(
+        `Error while creating pilot: ${(data as BackendError).reason}`
+      );
     } else {
       setResponse(`${formData.pilotName} successfully created. Redirecting...`);
-      setTimeout(() => setRedirect(true), 2000);
+      setTimeout(() => setRedirect(true), 1500);
     }
     setFormData({
       pilotName: "",
@@ -69,7 +73,9 @@ export default function CreatePilot() {
                 onChange={handleChange}
               />
             </div>
-            <button onClick={submit}>Create Pilot</button>
+            <button onClick={(event) => void submit(event)}>
+              Create Pilot
+            </button>
           </form>
         )}
       </div>

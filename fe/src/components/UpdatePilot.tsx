@@ -1,44 +1,49 @@
 import { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
-import { getPilot, updatePilot } from "./utils";
+import { BackendError, getPilot, Pilot, updatePilot } from "./utils";
 
-export default function UpdatePilot(params) {
+export default function UpdatePilot(): JSX.Element {
   const [formData, setFormData] = useState({
     pilotName: "",
     pilotTeam: "",
   });
-  const [pilot, setPilot] = useState({
-    id: 0,
-    name: "",
-    team: {
-      id: 0,
-      name: "",
-    },
-  });
+  const [pilot, setPilot] = useState({} as Pilot);
   const [response, setResponse] = useState("");
   const { id } = useParams();
   const [redirect, setRedirect] = useState(false);
 
   useEffect(() => {
-    load(+id);
+    if (id) {
+      void load(id);
+    }
   }, [id]);
 
-  const load = async (id) => {
-    const data = await getPilot(+id);
-    if (data.reason) {
-      setResponse(`Error while loading pilot: ${data.reason}.`);
+  const load = async (id: string): Promise<void> => {
+    const data = await getPilot(id);
+    if ((data as BackendError).reason) {
+      setResponse(
+        `Error while loading pilot: ${(data as BackendError).reason}.`
+      );
       return;
     }
-    setPilot(data);
-    setFormData({ pilotName: data.name, pilotTeam: data.team?.name });
+    setPilot(data as unknown as Pilot);
+    setFormData({
+      pilotName: (data as unknown as Pilot).name,
+      pilotTeam: (data as unknown as Pilot).team?.name || "",
+    });
   };
 
-  const submit = async (event) => {
+  const submit = async (event: React.SyntheticEvent): Promise<void> => {
     event.preventDefault();
+    if (!id) {
+      return;
+    }
     const pilotName = formData.pilotName.trimStart().trimEnd();
-    const teamName = formData.pilotTeam?.trimStart().trimEnd() || "";
+    const teamName = formData.pilotTeam.trimStart().trimEnd() || "";
     const body =
-      teamName?.toLowerCase() === "n/a" || teamName === "na" || teamName === ""
+      teamName.toLowerCase() === "n/a" ||
+      teamName.toLowerCase() === "na" ||
+      teamName.toLowerCase() === ""
         ? JSON.stringify({
             id: +id,
             name: pilotName,
@@ -50,16 +55,18 @@ export default function UpdatePilot(params) {
             team: { name: teamName },
           });
     const data = await updatePilot(body);
-    if (data.reason) {
-      setResponse(`Error while updating pilot: ${data.reason}`);
+    if ((data as BackendError).reason) {
+      setResponse(
+        `Error while updating pilot: ${(data as BackendError).reason}`
+      );
     } else {
       setResponse(`Pilot successfully updated. Redirecting...`);
       setTimeout(() => setRedirect(true), 2000);
     }
   };
 
-  function changeHandler(event) {
-    const { name, value } = event.target;
+  function changeHandler(event: React.FormEvent<HTMLInputElement>): void {
+    const { name, value } = event.currentTarget;
 
     setFormData((prevFormData) => ({
       ...prevFormData,
@@ -94,7 +101,9 @@ export default function UpdatePilot(params) {
                 value={formData.pilotTeam}
               />
             </div>
-            <button onClick={submit}>Submit update</button>
+            <button onClick={(event) => void submit(event)}>
+              Submit update
+            </button>
           </form>
         )}
       </div>

@@ -6,13 +6,12 @@ import App from "./App";
 import Team from "./components/Team";
 import Pilot from "./components/Pilot";
 import Header from "./components/Header";
-import reportWebVitals from "./reportWebVitals";
 import UpdatePilot from "./components/UpdatePilot";
 import UpdateTeam from "./components/UpdateTeam";
 import CreateTeam from "./components/CreateTeam";
 import CreatePilot from "./components/CreatePilot";
 
-const root = createRoot(document.getElementById("root"));
+const root = createRoot(document.getElementById("root") as HTMLElement);
 root.render(
   <StrictMode>
     <div className="page">
@@ -33,8 +32,3 @@ root.render(
     </div>
   </StrictMode>
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
