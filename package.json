@@ -6,6 +6,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "init": "cd .. && mkdir f1-data\\MSSQL && cd f1-data\\MSSQL && mkdir data log secrets",
     "clear-init": "cd .. && rmdir /s f1-data",
+    "linux-init": "cd .. && mkdir f1-data && cd f1-data && mkdir MSSQL && cd MSSQL && mkdir data log secrets",
+    "linux-clear-init": "cd .. && rm -r --interactive=once f1-data",
     "start": "docker-compose up -d",
     "stop": "docker-compose down",
     "create-docker-network": "docker network create --driver bridge f1_f1-net",

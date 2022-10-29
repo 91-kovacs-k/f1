@@ -10,7 +10,7 @@
     "prestart": "npm run build",
     "start": "set NODE_DBHOST=localhost&& node .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start-from-docker": "node ."
+    "start-from-docker": "npm run build && node ."
   },
   "repository": {
     "type": "git",
