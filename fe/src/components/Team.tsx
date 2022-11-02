@@ -1,16 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import {
-  getTeams,
-  getTeam,
-  deleteTeam,
-  BackendError,
-  Team as TeamType,
-} from "./utils";
+import { getTeams, getTeam, deleteTeam, Team as TeamType } from "./utils";
 import Modal from "../Modal";
 
 export default function Team(): JSX.Element {
   const [teams, setTeams] = useState([] as TeamType[]);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     teamSearch: "",
   });
@@ -19,19 +14,20 @@ export default function Team(): JSX.Element {
   const [selectedTeam, setSelectedTeam] = useState({} as TeamType);
 
   useEffect(() => {
+    setLoading(true);
+    setTeams([] as TeamType[]);
     void load();
   }, []);
 
   const load = async (): Promise<void> => {
-    const data = await getTeams();
-    if ((data as BackendError).reason) {
-      setResponse(
-        `Error while loading teams: ${(data as BackendError).reason}`
-      );
+    const fetch = await getTeams();
+    setLoading(false);
+    if (fetch.error) {
+      setResponse(`Error while loading teams: ${fetch.error.reason}`);
       setFormData({ teamSearch: "" });
       return;
     }
-    setTeams(data as TeamType[]);
+    setTeams(fetch.data as TeamType[]);
   };
 
   const changeHandler = (event: React.FormEvent<HTMLInputElement>): void => {
@@ -44,12 +40,10 @@ export default function Team(): JSX.Element {
   };
 
   const onDelete = async () => {
-    const data = await deleteTeam(selectedTeam.id);
-    if ((data as BackendError).reason) {
+    const fetch = await deleteTeam(selectedTeam.id);
+    if (fetch.error) {
       toggleModal();
-      setResponse(
-        `Error while deleting team: ${(data as BackendError).reason}`
-      );
+      setResponse(`Error while deleting team: ${fetch.error.reason}`);
     } else {
       await load();
       toggleModal();
@@ -58,19 +52,15 @@ export default function Team(): JSX.Element {
 
   const onGet = async (event: React.SyntheticEvent): Promise<void> => {
     event.preventDefault();
-    const data = await getTeam(
+    const fetch = await getTeam(
       formData.teamSearch.trimStart().trimEnd().toLowerCase()
     );
-    if ((data as BackendError).reason) {
-      setResponse(`Error while loading team: ${(data as BackendError).reason}`);
-    } else if (Array.isArray(data)) {
-      setTeams(data);
-      setResponse("");
-    } else {
-      setTeams([data as unknown as TeamType]);
+    if (fetch.error) {
+      setResponse(`Error while loading team: ${fetch.error.reason}`);
+    } else if (Array.isArray(fetch.data)) {
+      setTeams(fetch.data);
       setResponse("");
     }
-
     setFormData({ teamSearch: "" });
   };
 
@@ -113,55 +103,61 @@ export default function Team(): JSX.Element {
 
   return (
     <>
-      <div className="row">
-        <Link className="button" to="/createteam">
-          Add Team
-        </Link>
-        <div className="search">
-          <form>
-            <input
-              type="text"
-              name="teamSearch"
-              id="teamSearch"
-              value={formData.teamSearch}
-              placeholder="Team ID or Name"
-              onChange={changeHandler}
-            />
-            <button
-              onClick={(event) => {
-                void onGet(event);
-              }}
-            >
-              Get Team
-            </button>
-          </form>
-        </div>
-      </div>
-
-      {response === "" ? (
-        teams.map((team) => {
-          return (
-            <div className="teamItem" key={team.id}>
-              <span>{team.name}</span>
-              <Link className="button" to={`/team/${team.id}`}>
-                Update
-              </Link>
-              <button
-                className="button delete"
-                onClick={() => {
-                  toggleModal();
-                  setSelectedTeam(team);
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          );
-        })
+      {loading ? (
+        <p className="response">Loading...</p>
       ) : (
-        <p className="response">{response}</p>
+        <>
+          <div className="row">
+            <Link className="button" to="/createteam">
+              Add Team
+            </Link>
+            <div className="search">
+              <form>
+                <input
+                  type="text"
+                  name="teamSearch"
+                  id="teamSearch"
+                  value={formData.teamSearch}
+                  placeholder="Team ID or Name"
+                  onChange={changeHandler}
+                />
+                <button
+                  onClick={(event) => {
+                    void onGet(event);
+                  }}
+                >
+                  Get Team
+                </button>
+              </form>
+            </div>
+          </div>
+
+          {response === "" ? (
+            teams.map((team) => {
+              return (
+                <div className="teamItem" key={team.id}>
+                  <span>{team.name}</span>
+                  <Link className="button" to={`/team/${team.id}`}>
+                    Update
+                  </Link>
+                  <button
+                    className="button delete"
+                    onClick={() => {
+                      toggleModal();
+                      setSelectedTeam(team);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              );
+            })
+          ) : (
+            <p className="response">{response}</p>
+          )}
+          {showModal ? renderModal() : null}
+        </>
       )}
-      {showModal ? renderModal() : null}
     </>
   );
 }

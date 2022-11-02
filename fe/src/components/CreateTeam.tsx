@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
-import { BackendError, createTeam } from "./utils";
+import { createTeam } from "./utils";
 
 export default function CreateTeam(): JSX.Element {
   const [formData, setFormData] = useState({
@@ -23,12 +23,10 @@ export default function CreateTeam(): JSX.Element {
       return;
     }
 
-    const data = await createTeam(formData.teamName.trimStart().trimEnd());
+    const fetch = await createTeam(formData.teamName.trimStart().trimEnd());
 
-    if ((data as BackendError).reason) {
-      setResponse(
-        `Error while creating team: ${(data as BackendError).reason}`
-      );
+    if (fetch.error) {
+      setResponse(`Error while creating team: ${fetch.error.reason}`);
     } else {
       setResponse(`${formData.teamName} successfully created. Redirecting...`);
       setTimeout(() => setRedirect(true), 2000);

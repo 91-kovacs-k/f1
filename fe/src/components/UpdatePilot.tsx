@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
-import { BackendError, getPilot, Pilot, updatePilot } from "./utils";
+import { getPilot, Pilot, updatePilot } from "./utils";
 
 export default function UpdatePilot(): JSX.Element {
   const [formData, setFormData] = useState({
@@ -19,18 +19,17 @@ export default function UpdatePilot(): JSX.Element {
   }, [id]);
 
   const load = async (id: string): Promise<void> => {
-    const data = await getPilot(id);
-    if ((data as BackendError).reason) {
-      setResponse(
-        `Error while loading pilot: ${(data as BackendError).reason}.`
-      );
+    const fetch = await getPilot(id);
+    if (fetch.error) {
+      setResponse(`Error while loading pilot: ${fetch.error.reason}.`);
       return;
+    } else if (fetch.data) {
+      setPilot(fetch.data[0]);
+      setFormData({
+        pilotName: fetch.data[0].name,
+        pilotTeam: fetch.data[0].team?.name || "",
+      });
     }
-    setPilot(data as unknown as Pilot);
-    setFormData({
-      pilotName: (data as unknown as Pilot).name,
-      pilotTeam: (data as unknown as Pilot).team?.name || "",
-    });
   };
 
   const submit = async (event: React.SyntheticEvent): Promise<void> => {
@@ -54,11 +53,9 @@ export default function UpdatePilot(): JSX.Element {
             name: pilotName,
             team: { name: teamName },
           });
-    const data = await updatePilot(body);
-    if ((data as BackendError).reason) {
-      setResponse(
-        `Error while updating pilot: ${(data as BackendError).reason}`
-      );
+    const fetch = await updatePilot(body);
+    if (fetch.error) {
+      setResponse(`Error while updating pilot: ${fetch.error.reason}`);
     } else {
       setResponse(`Pilot successfully updated. Redirecting...`);
       setTimeout(() => setRedirect(true), 2000);

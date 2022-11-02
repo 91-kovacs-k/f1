@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Navigate } from "react-router-dom";
-import { updateTeam, getTeam, Team, BackendError } from "./utils";
+import { updateTeam, getTeam, Team } from "./utils";
 
 export default function UpdateTeam(): JSX.Element {
   const [formData, setFormData] = useState({
@@ -18,15 +18,14 @@ export default function UpdateTeam(): JSX.Element {
   }, [id]);
 
   const load = async (id: string): Promise<void> => {
-    const data = await getTeam(id);
-    if ((data as BackendError).reason) {
-      setResponse(
-        `Error while loading team: ${(data as BackendError).reason}.`
-      );
+    const fetch = await getTeam(id);
+    if (fetch.error) {
+      setResponse(`Error while loading team: ${fetch.error.reason}.`);
       return;
+    } else if (fetch.data) {
+      setTeam(fetch.data[0]);
+      setFormData({ teamName: fetch.data[0].name });
     }
-    setTeam(data as unknown as Team);
-    setFormData({ teamName: (data as unknown as Team).name });
   };
 
   async function submit(event: React.SyntheticEvent): Promise<void> {
@@ -34,11 +33,12 @@ export default function UpdateTeam(): JSX.Element {
     if (!id) {
       return;
     }
-    const data = await updateTeam(+id, formData.teamName.trimStart().trimEnd());
-    if ((data as BackendError).reason) {
-      setResponse(
-        `Error while updating team: ${(data as BackendError).reason}.`
-      );
+    const fetch = await updateTeam(
+      +id,
+      formData.teamName.trimStart().trimEnd()
+    );
+    if (fetch.error) {
+      setResponse(`Error while updating team: ${fetch.error.reason}.`);
       return;
     }
     setResponse(

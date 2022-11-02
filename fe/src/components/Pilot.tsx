@@ -1,16 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import {
-  getPilots,
-  getPilot,
-  deletePilot,
-  Pilot as PilotType,
-  BackendError,
-} from "./utils";
+import { getPilots, getPilot, deletePilot, Pilot as PilotType } from "./utils";
 import Modal from "../Modal";
 
 export default function Pilot(): JSX.Element {
   const [pilots, setPilots] = useState([] as PilotType[]);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     pilotSearch: "",
   });
@@ -19,19 +14,20 @@ export default function Pilot(): JSX.Element {
   const [selectedPilot, setSelectedPilot] = useState({} as PilotType);
 
   useEffect(() => {
+    setLoading(true);
+    setPilots([] as PilotType[]);
     void load();
   }, []);
 
   const load = async (): Promise<void> => {
-    const data = await getPilots();
-    if ((data as BackendError).reason) {
-      setResponse(
-        `Error while loading pilots: ${(data as BackendError).reason}`
-      );
+    const fetch = await getPilots();
+    setLoading(false);
+    if (fetch.error) {
+      setResponse(`Error while loading pilots: ${fetch.error.reason}`);
       setFormData({ pilotSearch: "" });
       return;
     }
-    setPilots(data as PilotType[]);
+    setPilots(fetch.data as PilotType[]);
   };
 
   const changeHandler = (event: React.FormEvent<HTMLInputElement>): void => {
@@ -48,12 +44,10 @@ export default function Pilot(): JSX.Element {
   };
 
   const onDelete = async () => {
-    const data = await deletePilot(selectedPilot.id);
-    if ((data as BackendError).reason) {
+    const fetch = await deletePilot(selectedPilot.id);
+    if (fetch.error) {
       toggleModal();
-      setResponse(
-        `Error while deleting pilot: ${(data as BackendError).reason}`
-      );
+      setResponse(`Error while deleting pilot: ${fetch.error.reason}`);
     } else {
       await load();
       toggleModal();
@@ -62,16 +56,11 @@ export default function Pilot(): JSX.Element {
 
   const onGet = async (event: React.SyntheticEvent): Promise<void> => {
     event.preventDefault();
-    const data = await getPilot(formData.pilotSearch);
-    if ((data as BackendError).reason) {
-      setResponse(
-        `Error while loading pilot: ${(data as BackendError).reason}`
-      );
-    } else if (Array.isArray(data)) {
-      setPilots(data);
-      setResponse("");
-    } else {
-      setPilots([data as unknown as PilotType]);
+    const fetch = await getPilot(formData.pilotSearch);
+    if (fetch.error) {
+      setResponse(`Error while loading pilot: ${fetch.error.reason}`);
+    } else if (Array.isArray(fetch.data)) {
+      setPilots(fetch.data);
       setResponse("");
     }
     setFormData({ pilotSearch: "" });
@@ -109,58 +98,66 @@ export default function Pilot(): JSX.Element {
 
   return (
     <>
-      <div className="row">
-        <Link className="button" to="/createpilot">
-          Add Pilot
-        </Link>
-        <div className="search">
-          <form>
-            <input
-              type="text"
-              name="pilotSearch"
-              id="pilotSearch"
-              value={formData.pilotSearch}
-              placeholder="Pilot ID or Name"
-              onChange={changeHandler}
-            />
-            <button
-              onClick={(event) => {
-                void onGet(event);
-              }}
-            >
-              Get Pilot
-            </button>
-          </form>
-        </div>
-      </div>
-
-      {response === "" ? (
-        pilots.map((pilot) => {
-          return (
-            <div className="pilotItem" key={pilot.id}>
-              <span>
-                {pilot.name}
-                {pilot.id === 0 ? "" : `, Team: ${pilot.team?.name || "N/A"}`}
-              </span>
-              <Link className="button" to={`/pilot/${pilot.id}`}>
-                Update
-              </Link>
-              <button
-                className="button delete"
-                onClick={() => {
-                  toggleModal();
-                  setSelectedPilot(pilot);
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          );
-        })
+      {loading ? (
+        <p className="response">Loading...</p>
       ) : (
-        <p className="response">{response}</p>
+        <>
+          <div className="row">
+            <Link className="button" to="/createpilot">
+              Add Pilot
+            </Link>
+            <div className="search">
+              <form>
+                <input
+                  type="text"
+                  name="pilotSearch"
+                  id="pilotSearch"
+                  value={formData.pilotSearch}
+                  placeholder="Pilot ID or Name"
+                  onChange={changeHandler}
+                />
+                <button
+                  onClick={(event) => {
+                    void onGet(event);
+                  }}
+                >
+                  Get Pilot
+                </button>
+              </form>
+            </div>
+          </div>
+
+          {response === "" ? (
+            pilots.map((pilot) => {
+              return (
+                <div className="pilotItem" key={pilot.id}>
+                  <span>
+                    {pilot.name}
+                    {pilot.id === 0
+                      ? ""
+                      : `, Team: ${pilot.team?.name || "N/A"}`}
+                  </span>
+                  <Link className="button" to={`/pilot/${pilot.id}`}>
+                    Update
+                  </Link>
+                  <button
+                    className="button delete"
+                    onClick={() => {
+                      toggleModal();
+                      setSelectedPilot(pilot);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              );
+            })
+          ) : (
+            <p className="response">{response}</p>
+          )}
+          {showModal ? renderModal() : null}
+        </>
       )}
-      {showModal ? renderModal() : null}
     </>
   );
 }
