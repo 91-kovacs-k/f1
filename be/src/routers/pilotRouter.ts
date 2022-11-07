@@ -6,20 +6,25 @@ export const pilotRouter = Router()
 
 pilotRouter.route('/')
   .get(async (req, res) => {
-    try {
-      const data = await pilotRepo.get()
-      return res.send(data)
-    } catch (error) {
-      if (error.type === ErrorType.NotFound || error.type === ErrorType.NoRecords) {
-        return res.status(404).send(error)
-      }
-      return res.status(500).send(error)
-    }
-  })
-  .post(async (req, res) => {
-    if (req.body.type === 'search') {
+    const query = req.query
+    if (query.name === undefined && query.limit === undefined) {
       try {
-        const ret = await pilotRepo.get(req.body.name, req.body.limit)
+        const data = await pilotRepo.get()
+        return res.send(data)
+      } catch (error) {
+        if (error.type === ErrorType.NotFound || error.type === ErrorType.NoRecords) {
+          return res.status(404).send(error)
+        }
+        return res.status(500).send(error)
+      }
+    } else {
+      try {
+        const nameQuery: string = query.name !== undefined ? query.name as string : ''
+        let limitQuery: number = 0
+        if (query.limit !== undefined && !(isNaN(+query.limit))) {
+          limitQuery = +query.limit
+        }
+        const ret = await pilotRepo.get(nameQuery, limitQuery)
         return res.send(ret)
       } catch (error) {
         if (error.type === ErrorType.NotFound || error.type === ErrorType.NoRecords) {
@@ -31,7 +36,8 @@ pilotRouter.route('/')
         return res.status(500).send(error)
       }
     }
-
+  })
+  .post(async (req, res) => {
     let data
     try {
       data = await pilotRepo.insert(req.body)

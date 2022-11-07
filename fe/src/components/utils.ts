@@ -59,12 +59,11 @@ export const getTeam = async (key: string): Promise<TeamArrayResponse> => {
       ret.error = (await response.json()) as BackendError;
     }
   } else {
-    const response = await fetch(`http://localhost:4000/api/team/`, {
-      method: "POST",
+    const response = await fetch(`http://localhost:4000/api/team?name=${key}`, {
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ type: "search", name: key, limit: 0 }),
     });
     if (response.ok) {
       ret.data = (await response.json()) as Team[];
@@ -178,13 +177,15 @@ export const getPilot = async (key: string): Promise<PilotArrayResponse> => {
       ret.error = (await response.json()) as BackendError;
     }
   } else {
-    const response = await fetch(`http://localhost:4000/api/pilot/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ type: "search", name: key, limit: 0 }),
-    });
+    const response = await fetch(
+      `http://localhost:4000/api/pilot?name=${key}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
     if (response.ok) {
       ret.data = (await response.json()) as Pilot[];
     } else {
