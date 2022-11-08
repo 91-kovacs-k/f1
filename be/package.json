@@ -5,7 +5,7 @@
   "main": "dist/app.js",
   "type": "module",
   "scripts": {
-    "prebuild": "eslint ./src/* --fix",
+    "prebuild": "eslint \"./src/**/*.{ts,js}\" --fix",
     "build": "tsc",
     "prestart": "npm run build",
     "start": "set NODE_DBHOST=localhost&& nodemon",
