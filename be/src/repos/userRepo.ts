@@ -1,15 +1,15 @@
-import { Team } from '../entity/Team.js'
-import { AppDataSource } from '../data-source.js'
 import { Like } from 'typeorm'
+import { AppDataSource } from '../data-source.js'
+import { User } from '../entity/User.js'
 import { ErrorType, BackendError } from '../utils/error.js'
 
-const repo = AppDataSource.getRepository(Team)
+const repo = AppDataSource.getRepository(User)
 
 export const get = async (
   query?: string,
   limit: number = 0
-): Promise<Team[]> => {
-  let ret: Team[] = []
+): Promise<User[]> => {
+  let ret: User[] = []
   try {
     let items
     if (!(query === null || query === undefined)) {
@@ -47,7 +47,7 @@ export const get = async (
         new BackendError(
           ErrorType.NoRecords,
           'no records',
-          'no team in database'
+          'no user in database'
         )
       )
     })
@@ -57,8 +57,8 @@ export const get = async (
   })
 }
 
-export const getById = async (id: number): Promise<Team> => {
-  let item: Team | null = null
+export const getById = async (id: number): Promise<User> => {
+  let item: User | null = null
   try {
     item = await repo.findOneBy({ id })
   } catch (error) {
@@ -74,21 +74,48 @@ export const getById = async (id: number): Promise<Team> => {
         new BackendError(
           ErrorType.NotFound,
           'not found',
-          `Could not find any entity of type "Team" matching: {\n    "id": ${id}\n`
+          `Could not find any entity of type "User" matching: {\n    "id": ${id}\n`
         )
       )
     })
   }
   return await new Promise((resolve, reject) => {
-    resolve(item as Team)
+    resolve(item as User)
   })
 }
 
-export const update = async (id: number, team: Team): Promise<Team> => {
-  let teamExists: Team | null = null
-  let idExists: Team | null = null
+export const getByUsername = async (username: string): Promise<User> => {
+  let item: User | null = null
   try {
-    teamExists = await repo.findOneBy({ name: Like(`%${team.name}%`) })
+    item = await repo.findOneBy({ name: username })
+  } catch (error) {
+    return await new Promise((resolve, reject) => {
+      reject(
+        new BackendError(ErrorType.ServerError, 'server error', error.message)
+      )
+    })
+  }
+  if (item === null) {
+    return await new Promise((resolve, reject) => {
+      return reject(
+        new BackendError(
+          ErrorType.NotFound,
+          'not found',
+          `Could not find any entity of type "User" matching: {\n    "name": ${username}\n`
+        )
+      )
+    })
+  }
+  return await new Promise((resolve, reject) => {
+    resolve(item as User)
+  })
+}
+
+export const update = async (id: number, user: User): Promise<User> => {
+  let userExists: User | null = null
+  let idExists: User | null = null
+  try {
+    userExists = await repo.findOneBy({ name: Like(`%${user.name}%`) })
     idExists = await repo.findOneBy({ id })
   } catch (error) {
     return await new Promise((resolve, reject) => {
@@ -98,13 +125,13 @@ export const update = async (id: number, team: Team): Promise<Team> => {
     })
   }
 
-  if (teamExists != null && teamExists.id !== id) {
+  if (userExists != null && userExists.id !== id) {
     return await new Promise((resolve, reject) => {
       return reject(
         new BackendError(
           ErrorType.AlreadyExists,
           'already exists',
-          `team with the name of ${team.name.toLowerCase()} already exists in database`
+          `user with the name of ${user.name.toLowerCase()} already exists in database`
         )
       )
     })
@@ -115,23 +142,23 @@ export const update = async (id: number, team: Team): Promise<Team> => {
         new BackendError(
           ErrorType.NotFound,
           'not found',
-          `team with id of ${id} not exists in database`
+          `user with id of ${id} not exists in database`
         )
       )
     })
   }
 
-  idExists.name = team.name
+  idExists.name = user.name
   await repo.save(idExists)
   return await new Promise((resolve, reject) => {
-    resolve(idExists as Team)
+    resolve(idExists as User)
   })
 }
 
-export const insert = async (team: Team): Promise<Team> => {
-  let teamFromDb: Team | null = null
+export const insert = async (user: User): Promise<User> => {
+  let userFromDb: User | null = null
   try {
-    teamFromDb = await repo.findOneBy({ name: Like(`%${team.name}%`) })
+    userFromDb = await repo.findOneBy({ name: Like(`%${user.name}%`) })
   } catch (error) {
     return await new Promise((resolve, reject) => {
       reject(
@@ -139,19 +166,19 @@ export const insert = async (team: Team): Promise<Team> => {
       )
     })
   }
-  if (teamFromDb !== null) {
+  if (userFromDb !== null) {
     return await new Promise((resolve, reject) => {
       return reject(
         new BackendError(
           ErrorType.AlreadyExists,
           'already exists',
-          `${team.name.toLowerCase()} already exists in database`
+          `${user.name.toLowerCase()} already exists in database`
         )
       )
     })
   }
 
-  if (team.id > 0) {
+  if (user.id > 0) {
     return await new Promise((resolve, reject) => {
       return reject(
         new BackendError(
@@ -162,16 +189,16 @@ export const insert = async (team: Team): Promise<Team> => {
       )
     })
   }
-  const ret = await repo.save(team)
+  const ret = await repo.save(user)
   return await new Promise((resolve, reject) => {
     resolve(ret)
   })
 }
 
-export const remove = async (id: number): Promise<Team> => {
-  let team: Team | null = null
+export const remove = async (id: number): Promise<User> => {
+  let user: User | null = null
   try {
-    team = await repo.findOneBy({ id })
+    user = await repo.findOneBy({ id })
   } catch (error) {
     return await new Promise((resolve, reject) => {
       reject(
@@ -179,32 +206,19 @@ export const remove = async (id: number): Promise<Team> => {
       )
     })
   }
-  if (team === null) {
+  if (user === null) {
     return await new Promise((resolve, reject) => {
       return reject(
         new BackendError(
           ErrorType.NotFound,
           'not found',
-          `team with ${id} not exists in database`
+          `user with ${id} not exists in database`
         )
       )
     })
   }
-  const pilots = await AppDataSource.getRepository('pilot').find({
-    where: { team },
-  })
 
-  for (let i = 0; i < pilots.length; i++) {
-    pilots[i].team = null
-    await AppDataSource.getRepository('pilot').save(pilots[i])
-  }
-
-  // pilots.forEach(async (pilot) => {
-  //   pilot.team = null
-  //   await AppDataSource.getRepository('pilot').save(pilot)
-  // })
-
-  const ret = await repo.remove(team)
+  const ret = await repo.remove(user)
   return await new Promise((resolve, reject) => {
     resolve(ret)
   })

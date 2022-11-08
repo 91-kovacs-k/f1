@@ -5,18 +5,18 @@ import {
   ManyToOne,
   JoinColumn,
   Relation,
-} from "typeorm";
-import { Team } from "../entity/Team.js";
+} from 'typeorm'
+import { Team } from '../entity/Team.js'
 
 @Entity()
 export class Pilot {
   @PrimaryGeneratedColumn()
-  id: number;
+  id: number
 
   @Column()
-  name: string;
+  name: string
 
   @ManyToOne(() => Team, (team) => team.id, { cascade: true })
   @JoinColumn()
-  team: Relation<Team>;
+  team: Relation<Team>
 }
