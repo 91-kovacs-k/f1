@@ -56,7 +56,7 @@ export default function Pilot(): JSX.Element {
 
   const onGet = async (event: React.SyntheticEvent): Promise<void> => {
     event.preventDefault();
-    const fetch = await getPilot(formData.pilotSearch);
+    const fetch = await getPilot(formData.pilotSearch.trim());
     if (fetch.error) {
       setResponse(`Error while loading pilot: ${fetch.error.reason}`);
     } else if (Array.isArray(fetch.data)) {

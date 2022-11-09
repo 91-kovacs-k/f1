@@ -31,11 +31,9 @@ export default function CreatePilot(): JSX.Element {
       team.toLowerCase() === ""
         ? JSON.stringify({ name: pilot })
         : JSON.stringify({ name: pilot, team: { name: team } });
-    const data = await createPilot(body);
-    if ((data as BackendError).reason) {
-      setResponse(
-        `Error while creating pilot: ${(data as BackendError).reason}`
-      );
+    const fetch = await createPilot(body);
+    if (fetch.error) {
+      setResponse(`Error while creating pilot: ${fetch.error.reason}`);
     } else {
       setResponse(`${formData.pilotName} successfully created. Redirecting...`);
       setTimeout(() => setRedirect(true), 1500);

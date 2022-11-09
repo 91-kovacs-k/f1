@@ -1,495 +1,565 @@
 html {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 *,
 *::before,
 *::after {
-    box-sizing: inherit;
+  box-sizing: inherit;
 }
 
-body{
-    background-image: url("../public/img/background.png");
-    background-repeat: no-repeat;
-    background-size: cover;
-    color: white;
-    font-family: spectral;
-    margin: 0;
-    padding: 0;
+body {
+  background-image: url("../public/img/background.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: white;
+  font-family: spectral;
+  margin: 0;
+  padding: 0;
 }
 
-.msg{
-    text-shadow: 2px 2px 5px #3B3936;
+.msg {
+  text-shadow: 2px 2px 5px #3b3936;
 }
 
-.innerModal{
-    background-color: #486966;
-    font-size: 1rem;
-    border: #333 1px solid;
-    border-radius: 5px;
-    display: block;
-    margin: 0 auto;
+.innerModal {
+  background-color: #486966;
+  font-size: 1rem;
+  border: #333 1px solid;
+  border-radius: 5px;
+  display: block;
+  margin: 0 auto;
 }
 
-.innerModal .buttons > .button{
-    width: 5rem;
+.innerModal .buttons > .button {
+  width: 5rem;
 }
 
 .innerModal .buttons > .delete:hover {
-    background-color: crimson;
+  background-color: crimson;
 }
 
-#modal .buttons{
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
+#modal .buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
 }
 
-#modal{
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top: 0;
-    z-index: 10;
+#modal {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  z-index: 10;
 }
-  
+
 #modal:empty {
-display: none;
+  display: none;
 }
 
-.innerModal{
-    height: 100vh;
-    width: 100vw;
-    background-color: rgba(0, 0, 0, 0.9);
-    
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.innerModal {
+  height: 100vh;
+  width: 100vw;
+  background-color: rgba(0, 0, 0, 0.9);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-  
+
 .innerModal > div {
-max-width: 60rem;
-padding: 1rem;
-text-align: center;
-border-radius: 30px;
-background: #486966;
+  max-width: 60rem;
+  padding: 1rem;
+  text-align: center;
+  border-radius: 30px;
+  background: #486966;
 }
 
-.header{
-    padding: 1rem;
-    background: #486966;
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
-    border-bottom: 1px solid #3B3936;
-    display: flex;
-    align-items: center;
+.header {
+  padding: 1rem;
+  background: #486966;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  border-bottom: 1px solid #3b3936;
+  display: flex;
+  align-items: center;
 }
 
 a {
-    text-decoration: none;
-    margin: 0;
-    padding: 0;
+  text-decoration: none;
+  margin: 0;
+  padding: 0;
 }
 
-.logo{
-    cursor: pointer;
-    color: #889C9B;
-    text-shadow: 2px 2px 5px #3B3936;
+.logo {
+  cursor: pointer;
+  color: #889c9b;
+  text-shadow: 2px 2px 5px #3b3936;
 }
 
-h2{
-    margin: 0;
-    padding: 0;
+h2 {
+  margin: 0;
+  padding: 0;
 }
 
-ul{
-    list-style-type: none;
+ul {
+  list-style-type: none;
 }
 
 .header > .logo > h2 {
-    display: flex;
-    align-items: center;
-    height: 1rem;
-    font-size: 3rem;
+  display: flex;
+  align-items: center;
+  height: 1rem;
+  font-size: 3rem;
 }
 
-.header > .menu > ul {
-    display: flex;
-    align-items: flex-end;
-    gap: 2rem;
+.header > .navigation {
+  display: flex;
 }
 
-.button{
-    padding: 0.0625rem 1rem;
-    background-color: #B2BEBF;
-    border:  1px solid #3B3936;
-    color: #3B3936;
-    font-size: 1.5rem;
-    font-family: spectral;
-    box-shadow: 2px 2px 5px #3B3936;
-    border-radius: 5px;
-    border:  1px solid #3B3936;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.header > .navigation > .menu > ul {
+  display: flex;
+  align-items: flex-end;
+  gap: 2rem;
 }
 
-.button:hover{
-    background-color:darkslategray;
-    cursor: pointer;
-    color: white;
+.header > .navigation {
+  display: flex;
+  align-items: center;
+  width: 100rem;
 }
 
-button{
-    background-color: #B2BEBF;
-    border:  1px solid #3B3936;
-    color: #3B3936;
-    font-size: 1.5rem;
-    padding: 0;
-    margin: 0;
-    font-family: spectral;
-    box-shadow: 2px 2px 5px #3B3936;
+.header > .navigation > .account {
+  margin-left: auto;
 }
 
-.page{
-    min-height: 98vh;
-    min-width: 900px;
-    max-width: 1000px;
-    margin: 2vh auto 0 auto;
-    padding-bottom: 2vh;
-    background-color: #889C9B;
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
-    border: 1px solid #3B3936;
-    box-shadow: 2px 2px 5px #3B3936;
+.Link {
+  text-align: center;
+  margin-top: 0;
+  font-size: 1.5rem;
 }
 
-.welcome{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #3B3936;
-    font-weight: 800;
-    font-size: 1.5rem;
-    margin-top: 5rem;
+.header > .navigation > .account-loggedIn {
+  margin-left: auto;
 }
 
-input{
-    font-family: spectral;
-    box-shadow: 2px 2px 5px #3B3936;
+.header > .navigation > .account > ul {
+  display: flex;
+  gap: 2rem;
 }
 
-.row{
-    display: flex;
-    align-items: center;
-    margin-top: 1rem;
+.button {
+  padding: 0.0625rem 1rem;
+  background-color: #b2bebf;
+  border: 1px solid #3b3936;
+  color: #3b3936;
+  font-size: 1.5rem;
+  font-family: spectral;
+  box-shadow: 2px 2px 5px #3b3936;
+  border-radius: 5px;
+  border: 1px solid #3b3936;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.row > .button{
-    margin-right: auto;
-    margin-left: 1rem;
-    width: 10rem;
-    height: 3rem;
-    text-align: center;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-    box-shadow: 2px 2px 5px #3B3936;
+.button:hover {
+  background-color: darkslategray;
+  cursor: pointer;
+  color: white;
 }
 
-.search{
-    display: flex;
-    justify-content: flex-end;
+button {
+  background-color: #b2bebf;
+  border: 1px solid #3b3936;
+  color: #3b3936;
+  font-size: 1.5rem;
+  padding: 0;
+  margin: 0;
+  font-family: spectral;
+  box-shadow: 2px 2px 5px #3b3936;
 }
 
-.search > form{
-    display: flex;
-    align-items: center;
-    padding: 0;
-    margin: 0;
+.page {
+  min-height: 98vh;
+  min-width: 900px;
+  max-width: 1000px;
+  margin: 2vh auto 0 auto;
+  padding-bottom: 2vh;
+  background-color: #889c9b;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  border: 1px solid #3b3936;
+  box-shadow: 2px 2px 5px #3b3936;
 }
 
-.search > form > input{
-    width: 15rem;
-    height: 3rem;
-    text-indent: 0.5rem;
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
-    border:  1px solid #3B3936;
-    font-size: 1.5rem;
-    box-shadow: 2px 2px 5px #3B3936;
+.welcome {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #3b3936;
+  font-weight: 800;
+  font-size: 1.5rem;
+  margin-top: 5rem;
 }
 
-.search > form > button{
-    margin-right: 1rem;
-    width: 8rem;
-    height: 3rem;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-    box-shadow: 2px 2px 5px #3B3936;
+input {
+  font-family: spectral;
+  box-shadow: 2px 2px 5px #3b3936;
 }
 
-.search > form > button:hover{
-    background-color:darkslategray;
-    cursor: pointer;
-    color: white;
+.row {
+  display: flex;
+  align-items: center;
+  margin-top: 1rem;
 }
 
-.team{
-    display: flex;
-    flex-flow: column wrap;
-    align-items: center;
+.row > .button {
+  margin-right: auto;
+  margin-left: 1rem;
+  width: 10rem;
+  height: 3rem;
+  text-align: center;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  box-shadow: 2px 2px 5px #3b3936;
 }
 
-.teamItem{
-    width: 30rem;
-    height: 3.5rem;
-    background-color: rgb(43, 43, 41);
-    border-radius: 5px;
-    margin: 1rem auto;
-    padding: 0 1rem;
-    display: flex;
-    flex-flow: row wrap;
-    align-items: center;
-    box-shadow: 2px 2px 5px #3B3936;
-    gap: 1rem;
+.search {
+  display: flex;
+  justify-content: flex-end;
 }
 
-.teamItem > span{
-    margin-right: auto;
-    font-size: 1.5rem;
+.search > form {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  margin: 0;
 }
 
-.teamItem > button{
-    margin-right: 1rem;
-    width: 6rem;
-    height: 2.5rem;
-    border-radius: 5px;
-    border: none;
+.search > form > input {
+  width: 15rem;
+  height: 3rem;
+  text-indent: 0.5rem;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  border: 1px solid #3b3936;
+  font-size: 1.5rem;
+  box-shadow: 2px 2px 5px #3b3936;
 }
 
-.teamItem > button:hover{
-    background-color:darkslategray;
-    cursor: pointer;
-    color: white;
+.search > form > button {
+  margin-right: 1rem;
+  width: 8rem;
+  height: 3rem;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  box-shadow: 2px 2px 5px #3b3936;
 }
 
-.teamItem > .delete:hover{
-    background-color:crimson;
+.search > form > button:hover {
+  background-color: darkslategray;
+  cursor: pointer;
+  color: white;
 }
 
-.createTeam{
-    display: flex;
-    flex-flow: row wrap;
-    align-items: center;
-    justify-content: center;
-    margin: 3rem;
+.team {
+  display: flex;
+  flex-flow: column wrap;
+  align-items: center;
 }
 
-.updateTeam{
-    text-align: center;
-    margin: 3rem;
-    display: flex;
-    justify-content: center;
+.teamItem {
+  width: 30rem;
+  height: 3.5rem;
+  background-color: rgb(43, 43, 41);
+  border-radius: 5px;
+  margin: 1rem auto;
+  padding: 0 1rem;
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  box-shadow: 2px 2px 5px #3b3936;
+  gap: 1rem;
 }
 
-.createTeam > form > input
-{
-    height: 3rem;
-    width: 20rem;
-    text-indent: 1rem;
-    border-top-left-radius: 10px;
-    border-bottom-left-radius: 10px;
-    border:  1px solid #3B3936;
-    font-size: 1.5rem;
+.teamItem > span {
+  margin-right: auto;
+  font-size: 1.5rem;
 }
 
-.createTeam > form{
-    display: flex;
-    justify-content: center;
+.teamItem > button {
+  margin-right: 1rem;
+  width: 6rem;
+  height: 2.5rem;
+  border-radius: 5px;
+  border: none;
 }
 
-.updateTeam > form{
-    display: flex;
-    justify-content: center;
+.teamItem > button:hover {
+  background-color: darkslategray;
+  cursor: pointer;
+  color: white;
 }
 
-.updateTeam > form > input{
-    height: 3rem;
-    width: 20rem;
-    text-indent: 1rem;
-    border-top-left-radius: 10px;
-    border-bottom-left-radius: 10px;
-    border:  1px solid #3B3936;
-    font-size: 1.5rem;
+.teamItem > .delete:hover {
+  background-color: crimson;
 }
 
-.createTeam > form > button{
-    height: 3rem;
-    width: 10rem;
-    border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px;
-    border: 1px;
-    
+.createTeam {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  justify-content: center;
+  margin: 3rem;
 }
 
-.updateTeam > form > button{
-    height: 3rem;
-    width: 10rem;
-    border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px;
-    border: 1px;
+.updateTeam {
+  text-align: center;
+  margin: 3rem;
+  display: flex;
+  justify-content: center;
 }
 
-.createTeam > form > button:hover{
-    background-color:darkslategray;
-    cursor: pointer;
-    color: white;
+.createTeam > form > input {
+  height: 3rem;
+  width: 20rem;
+  text-indent: 1rem;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  border: 1px solid #3b3936;
+  font-size: 1.5rem;
 }
 
-.updateTeam > form > button:hover{
-    background-color:darkslategray;
-    cursor: pointer;
-    color: white;
+.createTeam > form {
+  display: flex;
+  justify-content: center;
 }
 
-.response{
-    font-size: 3rem;
-    text-align: center;
-    padding: 5rem;
-    text-shadow: 2px 2px 5px #3B3936;
+.updateTeam > form {
+  display: flex;
+  justify-content: center;
 }
 
-.dark{
-    color: #3B3936;
+.updateTeam > form > input {
+  height: 3rem;
+  width: 20rem;
+  text-indent: 1rem;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  border: 1px solid #3b3936;
+  font-size: 1.5rem;
 }
 
-.pilot{
-    display: flex;
-    flex-flow: column wrap;
-    align-items: center;
-    
+.createTeam > form > button {
+  height: 3rem;
+  width: 10rem;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  border: 1px;
 }
 
-.pilotItem{
-    width: 40rem;
-    height: 3.5rem;
-    background-color: rgb(43, 43, 41);
-    border-radius: 5px;
-    margin: 1rem auto;
-    padding: 0 1rem;
-    display: flex;
-    flex-flow: row wrap;
-    align-items: center;
-    box-shadow: 2px 2px 5px #3B3936;
-    gap: 1rem;
+.updateTeam > form > button {
+  height: 3rem;
+  width: 10rem;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  border: 1px;
 }
 
-.pilotItem > span{
-    margin-right: auto;
-    font-size: 1.5rem;
+.createTeam > form > button:hover {
+  background-color: darkslategray;
+  cursor: pointer;
+  color: white;
 }
 
-.pilotItem > button{
-    margin-right: 1rem;
-    width: 6rem;
-    height: 2.5rem;
-    border-radius: 5px;
-    border: none;
+.updateTeam > form > button:hover {
+  background-color: darkslategray;
+  cursor: pointer;
+  color: white;
 }
 
-.pilotItem > button:hover{
-    background-color:darkslategray;
-    cursor: pointer;
-    color: white;
+.response {
+  font-size: 3rem;
+  text-align: center;
+  padding: 5rem;
+  text-shadow: 2px 2px 5px #3b3936;
 }
 
-.pilotItem > .delete:hover{
-    background-color:crimson;
+.dark {
+  color: #3b3936;
 }
 
-.updatePilot > form{
-    display: flex;
-    justify-content: center;
+.pilot {
+  display: flex;
+  flex-flow: column wrap;
+  align-items: center;
+}
+
+.pilotItem {
+  width: 40rem;
+  height: 3.5rem;
+  background-color: rgb(43, 43, 41);
+  border-radius: 5px;
+  margin: 1rem auto;
+  padding: 0 1rem;
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  box-shadow: 2px 2px 5px #3b3936;
+  gap: 1rem;
+}
+
+.pilotItem > span {
+  margin-right: auto;
+  font-size: 1.5rem;
+}
+
+.pilotItem > button {
+  margin-right: 1rem;
+  width: 6rem;
+  height: 2.5rem;
+  border-radius: 5px;
+  border: none;
+}
+
+.pilotItem > button:hover {
+  background-color: darkslategray;
+  cursor: pointer;
+  color: white;
+}
+
+.pilotItem > .delete:hover {
+  background-color: crimson;
+}
+
+.updatePilot > form {
+  display: flex;
+  justify-content: center;
+}
+.register > form {
+  display: flex;
+  justify-content: center;
 }
 
 .updatePilot > form > .inputs > input {
-    height: 3rem;
-    width: 20rem;
-    text-indent: 1rem;
-    border: 1px solid #3B3936;
-    font-size: 1.5rem;
-
+  height: 3rem;
+  width: 20rem;
+  text-indent: 1rem;
+  border: 1px solid #3b3936;
+  font-size: 1.5rem;
+}
+.register > form > .inputs > input {
+  height: 3rem;
+  width: 20rem;
+  text-indent: 1rem;
+  border: 1px solid #3b3936;
+  font-size: 1.5rem;
 }
 
-.updatePilot > form > .inputs > input:first-child{
-    border-top-left-radius: 10px;
+.updatePilot > form > .inputs > input:first-child {
+  border-top-left-radius: 10px;
 }
-.updatePilot > form > .inputs > input:last-child{
-    border-bottom-left-radius: 10px;
+.register > form > .inputs > input:first-child {
+  border-top-left-radius: 10px;
 }
-
-.updatePilot > form{
-    display: flex;
-    flex-flow: row wrap;
+.updatePilot > form > .inputs > input:last-child {
+  border-bottom-left-radius: 10px;
 }
-
-.inputs{
-    margin-top: 3rem;
-    display: flex;
-    flex-flow: column wrap;
+.register > form > .inputs > input:last-child {
+  border-bottom-left-radius: 10px;
 }
 
-.updatePilot > form > button{
-    margin-top: 3rem;
-    width: 12rem;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
+.updatePilot > form {
+  display: flex;
+  flex-flow: row wrap;
+}
+.register > form {
+  display: flex;
+  flex-flow: row wrap;
 }
 
-.updatePilot > form > button:hover{
-    background-color:darkslategray;
-    cursor: pointer;
-    color: white;
+.inputs {
+  margin-top: 3rem;
+  display: flex;
+  flex-flow: column wrap;
+}
+
+.updatePilot > form > button {
+  margin-top: 3rem;
+  width: 12rem;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+.register > form > button {
+  margin-top: 3rem;
+  width: 12rem;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+.updatePilot > form > button:hover {
+  background-color: darkslategray;
+  cursor: pointer;
+  color: white;
+}
+.register > form > button:hover {
+  background-color: darkslategray;
+  cursor: pointer;
+  color: white;
+}
+
+.loggedIn {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.loggedIn > p {
+  padding: 0;
+  margin: 0;
+  width: 17rem;
+  text-align: right;
+  font-size: 1.5rem;
 }
 
 .createPilot > form > .inputs > input {
-    height: 3rem;
-    width: 20rem;
-    text-indent: 1rem;
-    border: 1px solid #3B3936;
-    font-size: 1.5rem;
-
+  height: 3rem;
+  width: 20rem;
+  text-indent: 1rem;
+  border: 1px solid #3b3936;
+  font-size: 1.5rem;
 }
 
-.createPilot > form > .inputs > input:first-child{
-    border-top-left-radius: 10px;
+.createPilot > form > .inputs > input:first-child {
+  border-top-left-radius: 10px;
 }
-.createPilot > form > .inputs > input:last-child{
-    border-bottom-left-radius: 10px;
-}
-
-.createPilot > form{
-    display: flex;
-    flex-flow: row wrap;
+.createPilot > form > .inputs > input:last-child {
+  border-bottom-left-radius: 10px;
 }
 
-.createPilot > form > button{
-    margin-top: 3rem;
-    width: 12rem;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
+.createPilot > form {
+  display: flex;
+  flex-flow: row wrap;
 }
 
-.createPilot > form > button:hover{
-    background-color:darkslategray;
-    cursor: pointer;
-    color: white;
+.createPilot > form > button {
+  margin-top: 3rem;
+  width: 12rem;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
 }
 
-.createPilot{
-    display: flex;
-    flex-flow: row wrap;
-    align-items: center;
-    justify-content: center;
+.createPilot > form > button:hover {
+  background-color: darkslategray;
+  cursor: pointer;
+  color: white;
+}
+
+.createPilot {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  justify-content: center;
 }

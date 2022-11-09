@@ -158,7 +158,7 @@ export const update = async (id: number, user: User): Promise<User> => {
 export const insert = async (user: User): Promise<User> => {
   let userFromDb: User | null = null
   try {
-    userFromDb = await repo.findOneBy({ name: Like(`%${user.name}%`) })
+    userFromDb = await repo.findOneBy({ name: user.name })
   } catch (error) {
     return await new Promise((resolve, reject) => {
       reject(

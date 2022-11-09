@@ -32,6 +32,7 @@ export interface TeamArrayResponse {
 export const getTeams = async (): Promise<TeamArrayResponse> => {
   const response = await fetch("http://localhost:4000/api/team", {
     method: "GET",
+    credentials: "include",
   });
   const ret: TeamArrayResponse = { data: undefined, error: undefined };
   if (response.ok) {
@@ -52,6 +53,7 @@ export const getTeam = async (key: string): Promise<TeamArrayResponse> => {
   if (!isNaN(+key)) {
     const response = await fetch(`http://localhost:4000/api/team/${+key}`, {
       method: "GET",
+      credentials: "include",
     });
     if (response.ok) {
       ret.data = [await response.json()] as Team[];
@@ -61,6 +63,7 @@ export const getTeam = async (key: string): Promise<TeamArrayResponse> => {
   } else {
     const response = await fetch(`http://localhost:4000/api/team?name=${key}`, {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -77,6 +80,7 @@ export const getTeam = async (key: string): Promise<TeamArrayResponse> => {
 export const deleteTeam = async (id: number): Promise<TeamResponse> => {
   const response = await fetch(`http://localhost:4000/api/team/${id}`, {
     method: "DELETE",
+    credentials: "include",
   });
   const ret: TeamResponse = { data: undefined, error: undefined };
   if (response.ok) {
@@ -93,6 +97,7 @@ export const updateTeam = async (
 ): Promise<TeamResponse> => {
   const response = await fetch(`http://localhost:4000/api/team/${id}`, {
     method: "PUT",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
@@ -114,6 +119,7 @@ export const updateTeam = async (
 export const createTeam = async (teamName: string): Promise<TeamResponse> => {
   const response = await fetch("http://localhost:4000/api/team", {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
@@ -150,6 +156,7 @@ export interface PilotArrayResponse {
 export const getPilots = async (): Promise<PilotArrayResponse> => {
   const response = await fetch("http://localhost:4000/api/pilot", {
     method: "GET",
+    credentials: "include",
   });
   const ret: PilotArrayResponse = { data: undefined, error: undefined };
   if (response.ok) {
@@ -170,6 +177,7 @@ export const getPilot = async (key: string): Promise<PilotArrayResponse> => {
   if (!isNaN(+key)) {
     const response = await fetch(`http://localhost:4000/api/pilot/${+key}`, {
       method: "GET",
+      credentials: "include",
     });
     if (response.ok) {
       ret.data = [await response.json()] as Pilot[];
@@ -181,6 +189,7 @@ export const getPilot = async (key: string): Promise<PilotArrayResponse> => {
       `http://localhost:4000/api/pilot?name=${key}`,
       {
         method: "GET",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -198,6 +207,7 @@ export const getPilot = async (key: string): Promise<PilotArrayResponse> => {
 export const deletePilot = async (id: number): Promise<PilotResponse> => {
   const response = await fetch(`http://localhost:4000/api/pilot/${id}`, {
     method: "DELETE",
+    credentials: "include",
   });
   const ret: PilotResponse = { data: undefined, error: undefined };
   if (response.ok) {
@@ -214,6 +224,7 @@ export const updatePilot = async (
   const id = +(JSON.parse(pilotBody) as Pilot).id;
   const response = await fetch(`http://localhost:4000/api/pilot/${id}`, {
     method: "PUT",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
@@ -230,14 +241,84 @@ export const updatePilot = async (
 
 export const createPilot = async (
   pilotBody: string
-): Promise<Pilot | BackendError> => {
+): Promise<PilotResponse> => {
   const response = await fetch("http://localhost:4000/api/pilot", {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
     body: pilotBody,
   });
-  const data = (await response.json()) as Pilot | BackendError;
-  return data;
+  const ret: PilotResponse = { data: undefined, error: undefined };
+  if (response.ok) {
+    ret.data = (await response.json()) as Pilot;
+  } else {
+    ret.error = (await response.json()) as BackendError;
+  }
+  return ret;
+};
+
+export interface User {
+  name: string;
+  password: string;
+  id: number;
+}
+
+export interface UserResponse {
+  data: User | undefined;
+  error: BackendError | undefined;
+}
+
+export const register = async (userBody: string): Promise<UserResponse> => {
+  const response = await fetch("http://localhost:4000/api/auth/register", {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: userBody,
+  });
+  const ret: UserResponse = { data: undefined, error: undefined };
+  if (response.ok) {
+    ret.data = (await response.json()) as User;
+  } else {
+    ret.error = (await response.json()) as BackendError;
+  }
+  return ret;
+};
+
+export const login = async (userBody: string): Promise<UserResponse> => {
+  const response = await fetch("http://localhost:4000/api/auth/login", {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: userBody,
+  });
+  const ret: UserResponse = { data: undefined, error: undefined };
+  if (response.ok) {
+    ret.data = (await response.json()) as User;
+  } else {
+    ret.error = (await response.json()) as BackendError;
+  }
+  return ret;
+};
+
+export const logout = async (): Promise<object | BackendError> => {
+  const response = await fetch("http://localhost:4000/api/auth/logout", {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  let ret: object | BackendError;
+  if (response.ok) {
+    ret = (await response.json()) as object;
+  } else {
+    ret = (await response.json()) as BackendError;
+  }
+  return ret;
 };

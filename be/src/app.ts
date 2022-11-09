@@ -9,7 +9,12 @@ import { authRouter } from './routers/authRouter.js'
 const app = express()
 const PORT = 4000
 
-app.use(cors())
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  })
+)
 app.use(bodyParser.json())
 app.use(
   session({

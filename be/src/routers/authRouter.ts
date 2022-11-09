@@ -9,10 +9,20 @@ export const authRouter = Router()
 authRouter.post('/login', async (req, res) => {
   const { username, password } = req.body
   if (username && password) {
-    const hashedPassword = hashPassword(password)
-    const userFromDb = await userRepo.getByUsername(username)
-
-    if (comparePasswords(hashedPassword, userFromDb.password)) {
+    let userFromDb: User | undefined
+    try {
+      userFromDb = await userRepo.getByUsername(username)
+    } catch (error) {
+      if (
+        error.type === ErrorType.AlreadyExists ||
+        error.type === ErrorType.ArgumentError
+      ) {
+        return res.status(400).send(error)
+      }
+      return res.status(500).send(error)
+    }
+    if (!comparePasswords(password, userFromDb.password)) {
+      res.status(401)
       return res.send(
         new BackendError(
           ErrorType.IncorrectPassword,
@@ -22,7 +32,7 @@ authRouter.post('/login', async (req, res) => {
       )
     } else {
       req.session.user = userFromDb
-      res.sendStatus(200)
+      res.send(userFromDb)
     }
   }
 })
@@ -56,4 +66,10 @@ authRouter.post('/register', async (req, res) => {
         )
       )
   }
+})
+
+authRouter.get('/logout', async (req, res) => {
+  req.session.user = undefined
+  res.status(200)
+  res.send({ response: `Successfully logged out.` })
 })
