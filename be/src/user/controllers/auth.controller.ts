@@ -5,14 +5,14 @@ import {
   Param,
   Body,
   Session,
-  HttpException,
-  HttpStatus,
+  BadRequestException,
   HttpCode,
 } from '@nestjs/common';
+import { UserParams } from 'src/utils/types';
 import { UserDataDto } from '../dtos/UserData.dto';
 import { UserService } from '../services/user.service';
 
-@Controller('/api/auth')
+@Controller('/auth')
 export class AuthController {
   constructor(private readonly userService: UserService) {}
 
@@ -24,11 +24,12 @@ export class AuthController {
     const [valid, data] = this.checkAndConvertUserData(userData);
 
     if (valid) {
-      session.user = await this.userService.insertUser(data);
+      session.user = await this.userService.insertUser(data as UserParams);
       return;
     }
-
-    throw new HttpException('Insufficient arguments', HttpStatus.BAD_REQUEST);
+    throw new BadRequestException(`Insufficient arguments.`, {
+      description: `insufficient arguments`,
+    });
   }
 
   @Post('/login')
@@ -40,10 +41,12 @@ export class AuthController {
     const [valid, data] = this.checkAndConvertUserData(userData);
 
     if (!valid) {
-      throw new HttpException('Insufficient arguments', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException(`Insufficient arguments.`, {
+        description: `insufficient arguments`,
+      });
     }
 
-    session.user = await this.userService.authenticateUser(data);
+    session.user = await this.userService.authenticateUser(data as UserParams);
   }
 
   @Get('/logout')
@@ -58,12 +61,12 @@ export class AuthController {
 
   private checkAndConvertUserData(
     userData: UserDataDto,
-  ): [boolean, UserDataDto | undefined] {
+  ): [boolean, UserParams | undefined] {
     const username = userData.username?.toString() || '';
     const password = userData.password?.toString() || '';
 
     if (username && password) {
-      return [true, { username, password } as UserDataDto];
+      return [true, { username, password } as UserParams];
     } else {
       return [false, undefined];
     }

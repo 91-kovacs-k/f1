@@ -1,8 +1,8 @@
-export type CreateUserParams = {
+export type UserParams = {
   username: string;
   password: string;
 };
 
-export type CreateTeamParams = {
+export type TeamParams = {
   name: string;
 };

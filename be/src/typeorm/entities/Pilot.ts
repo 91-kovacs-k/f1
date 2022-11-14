@@ -13,7 +13,7 @@ export class Pilot {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ unique: true })
   name: string;
 
   @ManyToOne(() => Team, (team) => team.id, { cascade: true })

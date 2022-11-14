@@ -43,8 +43,6 @@ if (process.env.ENVIRONMENT === 'localhost') {
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(AuthMiddleware)
-      .forRoutes('api/users', 'api/teams', 'api/pilots');
+    consumer.apply(AuthMiddleware).forRoutes('api');
   }
 }

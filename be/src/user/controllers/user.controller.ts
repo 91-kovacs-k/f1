@@ -5,13 +5,13 @@ import {
   Patch,
   Body,
   Param,
-  HttpException,
-  HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
+import { UserParams } from 'src/utils/types';
 import { UserDataDto } from '../dtos/UserData.dto';
 import { UserService } from '../services/user.service';
 
-@Controller('/api/users')
+@Controller('/api/user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -36,11 +36,13 @@ export class UserController {
     const password = userData.password?.toString().trim() || '';
 
     if (!username && !password) {
-      throw new HttpException('Insufficient arguments', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException(`Insufficient arguments.`, {
+        description: `insufficient arguments`,
+      });
     }
     return await this.userService.updateUser(userId, {
       username,
       password,
-    } as UserDataDto);
+    } as UserParams);
   }
 }

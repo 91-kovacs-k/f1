@@ -1,14 +1,13 @@
 import {
   Injectable,
-  HttpException,
-  HttpStatus,
   NotFoundException,
   UnauthorizedException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/typeorm/entities/User';
-import { CreateUserParams } from 'src/utils/types';
+import { UserParams } from 'src/utils/types';
 import { UserDataDto } from '../dtos/UserData.dto';
 import {
   checkIfValidUUID,
@@ -63,13 +62,15 @@ export class UserService {
     this.userRepository.save(userFromDb);
   }
 
-  async insertUser(userDetails: CreateUserParams): Promise<User> {
+  async insertUser(userDetails: UserParams): Promise<User> {
     if (
       await this.userRepository.findOneBy({ username: userDetails.username })
     ) {
-      throw new HttpException(
-        `The 'username' provided is already in use.`,
-        HttpStatus.CONFLICT,
+      throw new ConflictException(
+        `username '${userDetails.username}' already exists.`,
+        {
+          description: 'conflicting usernames',
+        },
       );
     }
 

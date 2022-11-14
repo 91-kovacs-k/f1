@@ -12,7 +12,7 @@ export class Team {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ unique: true })
   name: string;
 
   @OneToMany(() => Pilot, (pilot) => pilot.id)
