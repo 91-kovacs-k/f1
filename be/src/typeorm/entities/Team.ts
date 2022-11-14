@@ -4,17 +4,17 @@ import {
   Column,
   OneToMany,
   Relation,
-} from 'typeorm'
-import { Pilot } from '../entity/Pilot.js'
+} from 'typeorm';
+import { Pilot } from '../entities/Pilot';
 
 @Entity()
 export class Team {
-  @PrimaryGeneratedColumn()
-  id: number
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column()
-  name: string
+  name: string;
 
   @OneToMany(() => Pilot, (pilot) => pilot.id)
-  pilots: Relation<Pilot[]>
+  pilots: Relation<Pilot[]>;
 }

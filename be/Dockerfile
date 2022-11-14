@@ -3,6 +3,7 @@ FROM node:latest
 LABEL author="Krisztián Kovács"
 
 ENV NODE_ENV=development
+ENV ENVIRONMENT=docker
 ENV PORT=4000
 
 COPY . /var/www

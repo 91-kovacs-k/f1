@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 export const enum ErrorType {
   NotFound,
   NoRecords,
@@ -11,13 +10,13 @@ export const enum ErrorType {
 }
 
 export class BackendError extends Error {
-  type: ErrorType
-  reason: string
+  type: ErrorType;
+  reason: string;
 
   constructor(type: ErrorType, name: string, message: string) {
-    super(message)
-    this.reason = message
-    this.name = name
-    this.type = type
+    super(message);
+    this.reason = message;
+    this.name = name;
+    this.type = type;
   }
 }
