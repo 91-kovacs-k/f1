@@ -261,8 +261,6 @@ export const createPilot = async (
 
 export interface User {
   name: string;
-  password: string;
-  id: number;
 }
 
 export interface UserResponse {
@@ -270,8 +268,8 @@ export interface UserResponse {
   error: BackendError | undefined;
 }
 
-export const register = async (userBody: string): Promise<UserResponse> => {
-  const response = await fetch("http://localhost:4000/api/auth/register", {
+export const register = async (userBody: string): Promise<number> => {
+  const response = await fetch("http://localhost:4000/auth/register", {
     method: "POST",
     credentials: "include",
     headers: {
@@ -279,17 +277,18 @@ export const register = async (userBody: string): Promise<UserResponse> => {
     },
     body: userBody,
   });
-  const ret: UserResponse = { data: undefined, error: undefined };
-  if (response.ok) {
-    ret.data = (await response.json()) as User;
-  } else {
-    ret.error = (await response.json()) as BackendError;
-  }
-  return ret;
+  return response.status;
+  // const ret: UserResponse = { data: undefined, error: undefined };
+  // if (response.ok) {
+  //   ret.data = (await response.json()) as User;
+  // } else {
+  //   ret.error = (await response.json()) as BackendError;
+  // }
+  // return ret;
 };
 
-export const login = async (userBody: string): Promise<UserResponse> => {
-  const response = await fetch("http://localhost:4000/api/auth/login", {
+export const login = async (userBody: string): Promise<boolean> => {
+  const response: Response = await fetch("http://localhost:4000/auth/login", {
     method: "POST",
     credentials: "include",
     headers: {
@@ -297,28 +296,31 @@ export const login = async (userBody: string): Promise<UserResponse> => {
     },
     body: userBody,
   });
-  const ret: UserResponse = { data: undefined, error: undefined };
-  if (response.ok) {
-    ret.data = (await response.json()) as User;
-  } else {
-    ret.error = (await response.json()) as BackendError;
-  }
-  return ret;
+
+  // const ret: UserResponse = { data: undefined, error: undefined };
+  // if (response.ok) {
+  //   ret.data = (await response.json()) as User;
+  // } else {
+  //   ret.error = (await response.json()) as BackendError;
+  // }
+  // return ret;
+  return response.ok;
 };
 
-export const logout = async (): Promise<object | BackendError> => {
-  const response = await fetch("http://localhost:4000/api/auth/logout", {
+export const logout = async (): Promise<boolean> => {
+  const response = await fetch("http://localhost:4000/auth/logout", {
     method: "GET",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
   });
-  let ret: object | BackendError;
-  if (response.ok) {
-    ret = (await response.json()) as object;
-  } else {
-    ret = (await response.json()) as BackendError;
-  }
-  return ret;
+  return response.ok;
+  // let ret: object | BackendError;
+  // if (response.ok) {
+  //   ret = (await response.json()) as object;
+  // } else {
+  //   ret = (await response.json()) as BackendError;
+  // }
+  // return ret;
 };

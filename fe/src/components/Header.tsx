@@ -1,19 +1,11 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { UserContext } from "../App";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { User, logout, BackendError } from "./utils";
+import Logout from "./Logout";
 
 export default function Header(): JSX.Element {
   const { userContext, setUserContext } = useContext(UserContext);
-
-  const handleLogout = async () => {
-    const fetch = await logout();
-    if ((fetch as BackendError).reason) {
-      // server error
-    } else {
-      setUserContext({ name: "", password: "" } as User);
-    }
-  };
 
   return (
     <div className="header">
@@ -51,14 +43,7 @@ export default function Header(): JSX.Element {
             </ul>
           </div>
         ) : (
-          <div className="account-loggedIn">
-            <div className="loggedIn">
-              <p>Welcome back, {userContext?.name}</p>
-              <button className="button" onClick={() => void handleLogout()}>
-                Logout
-              </button>
-            </div>
-          </div>
+          <Logout />
         )}
       </div>
     </div>

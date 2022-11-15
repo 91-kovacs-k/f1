@@ -32,12 +32,19 @@ export default function Login() {
     });
 
     const fetch = await login(body);
-    if (fetch.error) {
-      setResponse(`Error while logging in: ${fetch.error.reason}`);
-    } else {
+    // if (fetch.error) {
+    //   setResponse(`Error while logging in: ${fetch.error.reason}`);
+    // } else {
+    //   setResponse(`Successfully logged in. Redirecting...`);
+    //   setUserContext(fetch.data as User);
+    //   setTimeout(() => setRedirect(true), 2000);
+    // }
+    if (fetch) {
       setResponse(`Successfully logged in. Redirecting...`);
-      setUserContext(fetch.data as User);
+      setUserContext({ name: formData.name } as User);
       setTimeout(() => setRedirect(true), 2000);
+    } else {
+      setResponse(`Error while logging in!`);
     }
   };
 
@@ -46,37 +53,34 @@ export default function Login() {
   } else {
     return (
       <div className="register">
-        {response ? (
-          <p className="response">{response}</p>
-        ) : (
-          <>
-            <form>
-              <div className="inputs">
-                <input
-                  type="text"
-                  name="name"
-                  id="name"
-                  onChange={changeHandler}
-                  placeholder="Username"
-                  value={formData.name}
-                />
-                <input
-                  type="password"
-                  name="password"
-                  id="password"
-                  onChange={changeHandler}
-                  placeholder="Password"
-                  value={formData.password}
-                />
-              </div>
-              <button onClick={(event) => void submit(event)}>Log in</button>
-            </form>
-            <p className="Link">
-              If you doesn&apos;t have an account yet, click{" "}
-              <Link to="/register">here</Link>.
-            </p>
-          </>
-        )}
+        <>
+          <form>
+            <div className="inputs">
+              <input
+                type="text"
+                name="name"
+                id="name"
+                onChange={changeHandler}
+                placeholder="Username"
+                value={formData.name}
+              />
+              <input
+                type="password"
+                name="password"
+                id="password"
+                onChange={changeHandler}
+                placeholder="Password"
+                value={formData.password}
+              />
+            </div>
+            <button onClick={(event) => void submit(event)}>Log in</button>
+          </form>
+          <p className="Link">
+            If you doesn&apos;t have an account yet, click{" "}
+            <Link to="/register">here</Link>.
+          </p>
+        </>
+        {response && <p className="response">{response}</p>}
       </div>
     );
   }

@@ -32,6 +32,7 @@ if (process.env.ENVIRONMENT === 'localhost') {
       synchronize: true,
       logging: false,
       entities: [User, Team, Pilot],
+      // entities: ['/src/typeorm/entities/*.ts'],
       migrations: [],
       subscribers: [],
       options: { encrypt: false },
