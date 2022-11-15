@@ -1,7 +1,8 @@
 import { useContext, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { UserContext } from "../App";
-import { login, User } from "./utils";
+import { User } from "./types";
+import { login } from "./utils";
 
 export default function Login() {
   const { userContext, setUserContext } = useContext(UserContext);
@@ -32,13 +33,6 @@ export default function Login() {
     });
 
     const fetch = await login(body);
-    // if (fetch.error) {
-    //   setResponse(`Error while logging in: ${fetch.error.reason}`);
-    // } else {
-    //   setResponse(`Successfully logged in. Redirecting...`);
-    //   setUserContext(fetch.data as User);
-    //   setTimeout(() => setRedirect(true), 2000);
-    // }
     if (fetch) {
       setResponse(`Successfully logged in. Redirecting...`);
       setUserContext({ name: formData.name } as User);

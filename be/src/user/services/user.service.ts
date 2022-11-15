@@ -21,12 +21,35 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
-  async findUsers(): Promise<User[]> {
-    const users = await this.userRepository.find();
-    if (users.length === 0) {
-      throw new NotFoundException();
+  async findUsers(query?: string, limit: number = 0): Promise<User[]> {
+    let ret: User[] = [];
+    let items;
+    if (query) {
+      items = await this.userRepository.findBy({ username: query });
+    } else {
+      items = await this.userRepository.find();
     }
-    return users;
+
+    if (limit > 0) {
+      ret = items.slice(0, limit);
+    } else {
+      ret = items;
+    }
+
+    if (ret.length === 0 && query) {
+      throw new NotFoundException(
+        `no user that matches '${query}' in database.`,
+        {
+          description: `no match for query`,
+        },
+      );
+    } else if (ret.length === 0 && !query) {
+      throw new NotFoundException('no user in database.', {
+        description: 'no user in database',
+      });
+    }
+
+    return ret;
   }
 
   async findUserById(userId: string): Promise<User> {

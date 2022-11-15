@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getTeams, getTeam, deleteTeam, Team as TeamType } from "./utils";
+import { getTeams, getTeamBySearchParam, deleteTeam } from "./utils";
+import { Team as TeamType } from "./types";
 import Modal from "../Modal";
 
 export default function Team(): JSX.Element {
@@ -22,8 +23,8 @@ export default function Team(): JSX.Element {
   const load = async (): Promise<void> => {
     const fetch = await getTeams();
     setLoading(false);
-    if (fetch.error) {
-      setResponse(`Error while loading teams: ${fetch.error.reason}`);
+    if (!fetch.ok) {
+      setResponse(`Error while loading teams: ${fetch.error.message}`);
       setFormData({ teamSearch: "" });
       return;
     }
@@ -41,9 +42,9 @@ export default function Team(): JSX.Element {
 
   const onDelete = async () => {
     const fetch = await deleteTeam(selectedTeam.id);
-    if (fetch.error) {
+    if (!fetch.ok) {
       toggleModal();
-      setResponse(`Error while deleting team: ${fetch.error.reason}`);
+      setResponse(`Error while deleting team: ${fetch.error.message}`);
     } else {
       await load();
       toggleModal();
@@ -52,11 +53,11 @@ export default function Team(): JSX.Element {
 
   const onGet = async (event: React.SyntheticEvent): Promise<void> => {
     event.preventDefault();
-    const fetch = await getTeam(
+    const fetch = await getTeamBySearchParam(
       formData.teamSearch.trimStart().trimEnd().toLowerCase()
     );
-    if (fetch.error) {
-      setResponse(`Error while loading team: ${fetch.error.reason}`);
+    if (!fetch.ok) {
+      setResponse(`Error while loading team: ${fetch.error.message}`);
     } else if (Array.isArray(fetch.data)) {
       setTeams(fetch.data);
       setResponse("");
@@ -118,7 +119,7 @@ export default function Team(): JSX.Element {
                   name="teamSearch"
                   id="teamSearch"
                   value={formData.teamSearch}
-                  placeholder="Team ID or Name"
+                  placeholder="Team name"
                   onChange={changeHandler}
                 />
                 <button

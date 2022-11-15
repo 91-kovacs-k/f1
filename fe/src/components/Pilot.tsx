@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getPilots, getPilot, deletePilot, Pilot as PilotType } from "./utils";
+import { getPilots, getPilotBySearchParam, deletePilot } from "./utils";
+import { Pilot as PilotType } from "./types";
 import Modal from "../Modal";
 
 export default function Pilot(): JSX.Element {
@@ -22,8 +23,8 @@ export default function Pilot(): JSX.Element {
   const load = async (): Promise<void> => {
     const fetch = await getPilots();
     setLoading(false);
-    if (fetch.error) {
-      setResponse(`Error while loading pilots: ${fetch.error.reason}`);
+    if (!fetch.ok) {
+      setResponse(`Error while loading pilots: ${fetch.error.message}`);
       setFormData({ pilotSearch: "" });
       return;
     }
@@ -45,9 +46,9 @@ export default function Pilot(): JSX.Element {
 
   const onDelete = async () => {
     const fetch = await deletePilot(selectedPilot.id);
-    if (fetch.error) {
+    if (!fetch.ok) {
       toggleModal();
-      setResponse(`Error while deleting pilot: ${fetch.error.reason}`);
+      setResponse(`Error while deleting pilot: ${fetch.error.message}`);
     } else {
       await load();
       toggleModal();
@@ -56,9 +57,9 @@ export default function Pilot(): JSX.Element {
 
   const onGet = async (event: React.SyntheticEvent): Promise<void> => {
     event.preventDefault();
-    const fetch = await getPilot(formData.pilotSearch.trim());
-    if (fetch.error) {
-      setResponse(`Error while loading pilot: ${fetch.error.reason}`);
+    const fetch = await getPilotBySearchParam(formData.pilotSearch.trim());
+    if (!fetch.ok) {
+      setResponse(`Error while loading pilot: ${fetch.error.message}`);
     } else if (Array.isArray(fetch.data)) {
       setPilots(fetch.data);
       setResponse("");
@@ -113,7 +114,7 @@ export default function Pilot(): JSX.Element {
                   name="pilotSearch"
                   id="pilotSearch"
                   value={formData.pilotSearch}
-                  placeholder="Pilot ID or Name"
+                  placeholder="Pilot name"
                   onChange={changeHandler}
                 />
                 <button

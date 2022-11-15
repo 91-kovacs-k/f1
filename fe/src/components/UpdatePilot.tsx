@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
-import { getPilot, Pilot, updatePilot } from "./utils";
+import { Pilot } from "./types";
+import { getPilotById, updatePilot } from "./utils";
 
 export default function UpdatePilot(): JSX.Element {
   const [formData, setFormData] = useState({
@@ -19,15 +20,15 @@ export default function UpdatePilot(): JSX.Element {
   }, [id]);
 
   const load = async (id: string): Promise<void> => {
-    const fetch = await getPilot(id);
-    if (fetch.error) {
-      setResponse(`Error while loading pilot: ${fetch.error.reason}.`);
+    const fetch = await getPilotById(id);
+    if (!fetch.ok) {
+      setResponse(`Error while loading pilot: ${fetch.error.message}.`);
       return;
     } else if (fetch.data) {
-      setPilot(fetch.data[0]);
+      setPilot(fetch.data);
       setFormData({
-        pilotName: fetch.data[0].name,
-        pilotTeam: fetch.data[0].team?.name || "",
+        pilotName: fetch.data.name,
+        pilotTeam: fetch.data.team?.name || "",
       });
     }
   };
@@ -44,18 +45,18 @@ export default function UpdatePilot(): JSX.Element {
       teamName.toLowerCase() === "na" ||
       teamName.toLowerCase() === ""
         ? JSON.stringify({
-            id: +id,
+            id: id,
             name: pilotName,
             team: null,
           })
         : JSON.stringify({
-            id: +id,
+            id: id,
             name: pilotName,
             team: { name: teamName },
           });
-    const fetch = await updatePilot(body);
-    if (fetch.error) {
-      setResponse(`Error while updating pilot: ${fetch.error.reason}`);
+    const fetch = await updatePilot(id, body);
+    if (!fetch.ok) {
+      setResponse(`Error while updating pilot: ${fetch.error.message}`);
     } else {
       setResponse(`Pilot successfully updated. Redirecting...`);
       setTimeout(() => setRedirect(true), 2000);

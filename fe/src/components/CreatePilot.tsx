@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
-import { BackendError, createPilot } from "./utils";
+import { createPilot } from "./utils";
 
 export default function CreatePilot(): JSX.Element {
   const [formData, setFormData] = useState({
@@ -32,8 +32,8 @@ export default function CreatePilot(): JSX.Element {
         ? JSON.stringify({ name: pilot })
         : JSON.stringify({ name: pilot, team: { name: team } });
     const fetch = await createPilot(body);
-    if (fetch.error) {
-      setResponse(`Error while creating pilot: ${fetch.error.reason}`);
+    if (!fetch.ok) {
+      setResponse(`Error while creating pilot: ${fetch.error.message}`);
     } else {
       setResponse(`${formData.pilotName} successfully created. Redirecting...`);
       setTimeout(() => setRedirect(true), 1500);

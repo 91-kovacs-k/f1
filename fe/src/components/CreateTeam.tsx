@@ -25,8 +25,8 @@ export default function CreateTeam(): JSX.Element {
 
     const fetch = await createTeam(formData.teamName.trimStart().trimEnd());
 
-    if (fetch.error) {
-      setResponse(`Error while creating team: ${fetch.error.reason}`);
+    if (!fetch.ok) {
+      setResponse(`Error while creating team: ${fetch.error.message}`);
     } else {
       setResponse(`${formData.teamName} successfully created. Redirecting...`);
       setTimeout(() => setRedirect(true), 2000);

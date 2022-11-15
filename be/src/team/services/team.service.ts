@@ -34,9 +34,16 @@ export class TeamService {
     }
 
     if (ret.length === 0 && query) {
-      throw new NotFoundException();
+      throw new NotFoundException(
+        `no team that matches '${query}' in database.`,
+        {
+          description: `no match for query`,
+        },
+      );
     } else if (ret.length === 0 && !query) {
-      throw new NotFoundException();
+      throw new NotFoundException('no team in database.', {
+        description: 'no team in database',
+      });
     }
 
     return ret;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Navigate } from "react-router-dom";
-import { updateTeam, getTeam, Team } from "./utils";
+import { Team } from "./types";
+import { updateTeam, getTeamById } from "./utils";
 
 export default function UpdateTeam(): JSX.Element {
   const [formData, setFormData] = useState({
@@ -18,13 +19,13 @@ export default function UpdateTeam(): JSX.Element {
   }, [id]);
 
   const load = async (id: string): Promise<void> => {
-    const fetch = await getTeam(id);
-    if (fetch.error) {
-      setResponse(`Error while loading team: ${fetch.error.reason}.`);
+    const fetch = await getTeamById(id);
+    if (!fetch.ok) {
+      setResponse(`Error while loading team: ${fetch.error.message}.`);
       return;
     } else if (fetch.data) {
-      setTeam(fetch.data[0]);
-      setFormData({ teamName: fetch.data[0].name });
+      setTeam(fetch.data);
+      setFormData({ teamName: fetch.data.name });
     }
   };
 
@@ -33,12 +34,9 @@ export default function UpdateTeam(): JSX.Element {
     if (!id) {
       return;
     }
-    const fetch = await updateTeam(
-      +id,
-      formData.teamName.trimStart().trimEnd()
-    );
-    if (fetch.error) {
-      setResponse(`Error while updating team: ${fetch.error.reason}.`);
+    const fetch = await updateTeam(id, formData.teamName.trimStart().trimEnd());
+    if (!fetch.ok) {
+      setResponse(`Error while updating team: ${fetch.error.message}.`);
       return;
     }
     setResponse(

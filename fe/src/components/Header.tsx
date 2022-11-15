@@ -1,7 +1,6 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { UserContext } from "../App";
-import { Link, Navigate } from "react-router-dom";
-import { User, logout, BackendError } from "./utils";
+import { Link } from "react-router-dom";
 import Logout from "./Logout";
 
 export default function Header(): JSX.Element {

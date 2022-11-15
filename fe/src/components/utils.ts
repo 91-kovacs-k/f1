@@ -1,40 +1,24 @@
-export const enum ErrorType {
-  NotFound,
-  NoRecords,
-  ServerError,
-  AlreadyExists,
-  ArgumentError,
-  MultipleMatch,
-  IdMismatch,
-}
-
-export interface BackendError extends Error {
-  reason: string;
-  name: string;
-  type: ErrorType;
-}
-
-export interface Team {
-  id: number;
-  name: string;
-}
-
-export interface TeamResponse {
-  data: Team | undefined;
-  error: BackendError | undefined;
-}
-
-export interface TeamArrayResponse {
-  data: Team[] | undefined;
-  error: BackendError | undefined;
-}
+import {
+  BackendError,
+  BackendResponse,
+  Pilot,
+  PilotArrayResponse,
+  PilotResponse,
+  Team,
+  TeamArrayResponse,
+  TeamResponse,
+} from "./types";
 
 export const getTeams = async (): Promise<TeamArrayResponse> => {
   const response = await fetch("http://localhost:4000/api/team", {
     method: "GET",
     credentials: "include",
   });
-  const ret: TeamArrayResponse = { data: undefined, error: undefined };
+  const ret: TeamArrayResponse = {
+    ok: response.ok,
+    data: undefined,
+    error: { statusCode: 0, message: "", error: "" },
+  };
   if (response.ok) {
     ret.data = (await response.json()) as Team[];
   } else {
@@ -43,60 +27,72 @@ export const getTeams = async (): Promise<TeamArrayResponse> => {
   return ret;
 };
 
-export const getTeam = async (key: string): Promise<TeamArrayResponse> => {
-  if (key === "") {
-    return getTeams();
-  }
-
-  const ret: TeamArrayResponse = { data: undefined, error: undefined };
-
-  if (!isNaN(+key)) {
-    const response = await fetch(`http://localhost:4000/api/team/${+key}`, {
-      method: "GET",
-      credentials: "include",
-    });
-    if (response.ok) {
-      ret.data = [await response.json()] as Team[];
-    } else {
-      ret.error = (await response.json()) as BackendError;
-    }
-  } else {
-    const response = await fetch(`http://localhost:4000/api/team?name=${key}`, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    if (response.ok) {
-      ret.data = (await response.json()) as Team[];
-    } else {
-      ret.error = (await response.json()) as BackendError;
-    }
-  }
-  return ret;
-};
-
-export const deleteTeam = async (id: number): Promise<TeamResponse> => {
-  const response = await fetch(`http://localhost:4000/api/team/${id}`, {
-    method: "DELETE",
+export const getTeamById = async (key: string): Promise<TeamResponse> => {
+  const response = await fetch(`http://localhost:4000/api/team/${key}`, {
+    method: "GET",
     credentials: "include",
   });
-  const ret: TeamResponse = { data: undefined, error: undefined };
+  const ret: TeamResponse = {
+    ok: response.ok,
+    data: undefined,
+    error: { statusCode: 0, message: "", error: "" },
+  };
   if (response.ok) {
     ret.data = (await response.json()) as Team;
   } else {
     ret.error = (await response.json()) as BackendError;
   }
+
   return ret;
 };
 
-export const updateTeam = async (
-  id: number,
-  name: string
-): Promise<TeamResponse> => {
+export const getTeamBySearchParam = async (
+  key: string
+): Promise<TeamArrayResponse> => {
+  if (key === "") {
+    return getTeams();
+  }
+
+  const response = await fetch(`http://localhost:4000/api/team?name=${key}`, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const ret: TeamArrayResponse = {
+    ok: response.ok,
+    data: undefined,
+    error: { statusCode: 0, message: "", error: "" },
+  };
+  if (response.ok) {
+    ret.data = (await response.json()) as Team[];
+  } else {
+    ret.error = (await response.json()) as BackendError;
+  }
+
+  return ret;
+};
+
+export const deleteTeam = async (id: number): Promise<BackendResponse> => {
   const response = await fetch(`http://localhost:4000/api/team/${id}`, {
-    method: "PUT",
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (response.ok) {
+    return { ok: response.ok } as BackendResponse;
+  } else {
+    return { ok: response.ok, error: (await response.json()) as BackendError };
+  }
+};
+
+export const updateTeam = async (
+  id: string,
+  name: string
+): Promise<BackendResponse> => {
+  const response = await fetch(`http://localhost:4000/api/team/${id}`, {
+    method: "PATCH",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
@@ -106,17 +102,16 @@ export const updateTeam = async (
       name: name,
     }),
   });
-  const ret: TeamResponse = { data: undefined, error: undefined };
   if (response.ok) {
-    ret.data = (await response.json()) as Team;
+    return { ok: response.ok } as BackendResponse;
   } else {
-    ret.error = (await response.json()) as BackendError;
+    return { ok: response.ok, error: (await response.json()) as BackendError };
   }
-
-  return ret;
 };
 
-export const createTeam = async (teamName: string): Promise<TeamResponse> => {
+export const createTeam = async (
+  teamName: string
+): Promise<BackendResponse> => {
   const response = await fetch("http://localhost:4000/api/team", {
     method: "POST",
     credentials: "include",
@@ -125,40 +120,26 @@ export const createTeam = async (teamName: string): Promise<TeamResponse> => {
     },
     body: JSON.stringify({ name: teamName }),
   });
-  const ret: TeamResponse = { data: undefined, error: undefined };
+
   if (response.ok) {
-    ret.data = (await response.json()) as Team;
+    return {
+      ok: response.ok,
+    } as BackendResponse;
   } else {
-    ret.error = (await response.json()) as BackendError;
+    return { ok: response.ok, error: (await response.json()) as BackendError };
   }
-  return ret;
 };
-
-export interface Pilot {
-  id: number;
-  name: string;
-  team?: {
-    id: number;
-    name: string;
-  };
-}
-
-export interface PilotResponse {
-  data: Pilot | undefined;
-  error: BackendError | undefined;
-}
-
-export interface PilotArrayResponse {
-  data: Pilot[] | undefined;
-  error: BackendError | undefined;
-}
 
 export const getPilots = async (): Promise<PilotArrayResponse> => {
   const response = await fetch("http://localhost:4000/api/pilot", {
     method: "GET",
     credentials: "include",
   });
-  const ret: PilotArrayResponse = { data: undefined, error: undefined };
+  const ret: PilotArrayResponse = {
+    ok: response.ok,
+    data: undefined,
+    error: { statusCode: 0, message: "", error: "" },
+  };
   if (response.ok) {
     ret.data = (await response.json()) as Pilot[];
   } else {
@@ -167,81 +148,87 @@ export const getPilots = async (): Promise<PilotArrayResponse> => {
   return ret;
 };
 
-export const getPilot = async (key: string): Promise<PilotArrayResponse> => {
-  if (key === "") {
-    return getPilots();
-  }
-
-  const ret: PilotArrayResponse = { data: undefined, error: undefined };
-
-  if (!isNaN(+key)) {
-    const response = await fetch(`http://localhost:4000/api/pilot/${+key}`, {
-      method: "GET",
-      credentials: "include",
-    });
-    if (response.ok) {
-      ret.data = [await response.json()] as Pilot[];
-    } else {
-      ret.error = (await response.json()) as BackendError;
-    }
-  } else {
-    const response = await fetch(
-      `http://localhost:4000/api/pilot?name=${key}`,
-      {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    if (response.ok) {
-      ret.data = (await response.json()) as Pilot[];
-    } else {
-      ret.error = (await response.json()) as BackendError;
-    }
-  }
-  return ret;
-};
-
-export const deletePilot = async (id: number): Promise<PilotResponse> => {
-  const response = await fetch(`http://localhost:4000/api/pilot/${id}`, {
-    method: "DELETE",
+export const getPilotById = async (key: string): Promise<PilotResponse> => {
+  const response = await fetch(`http://localhost:4000/api/pilot/${key}`, {
+    method: "GET",
     credentials: "include",
   });
-  const ret: PilotResponse = { data: undefined, error: undefined };
+  const ret: PilotResponse = {
+    ok: response.ok,
+    data: undefined,
+    error: { statusCode: 0, message: "", error: "" },
+  };
   if (response.ok) {
     ret.data = (await response.json()) as Pilot;
   } else {
     ret.error = (await response.json()) as BackendError;
   }
+
   return ret;
 };
 
-export const updatePilot = async (
-  pilotBody: string
-): Promise<PilotResponse> => {
-  const id = +(JSON.parse(pilotBody) as Pilot).id;
+export const getPilotBySearchParam = async (
+  key: string
+): Promise<PilotArrayResponse> => {
+  if (key === "") {
+    return getPilots();
+  }
+
+  const response = await fetch(`http://localhost:4000/api/pilot?name=${key}`, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  const ret: PilotArrayResponse = {
+    ok: response.ok,
+    data: undefined,
+    error: { statusCode: 0, message: "", error: "" },
+  };
+  if (response.ok) {
+    ret.data = (await response.json()) as Pilot[];
+  } else {
+    ret.error = (await response.json()) as BackendError;
+  }
+
+  return ret;
+};
+
+export const deletePilot = async (id: number): Promise<BackendResponse> => {
   const response = await fetch(`http://localhost:4000/api/pilot/${id}`, {
-    method: "PUT",
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (response.ok) {
+    return { ok: response.ok } as BackendResponse;
+  } else {
+    return { ok: response.ok, error: (await response.json()) as BackendError };
+  }
+};
+
+export const updatePilot = async (
+  id: string,
+  pilotBody: string
+): Promise<BackendResponse> => {
+  const response = await fetch(`http://localhost:4000/api/pilot/${id}`, {
+    method: "PATCH",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
     body: pilotBody,
   });
-  const ret: PilotResponse = { data: undefined, error: undefined };
   if (response.ok) {
-    ret.data = (await response.json()) as Pilot;
+    return { ok: response.ok } as BackendResponse;
   } else {
-    ret.error = (await response.json()) as BackendError;
+    return { ok: response.ok, error: (await response.json()) as BackendError };
   }
-  return ret;
 };
 
 export const createPilot = async (
   pilotBody: string
-): Promise<PilotResponse> => {
+): Promise<BackendResponse> => {
   const response = await fetch("http://localhost:4000/api/pilot", {
     method: "POST",
     credentials: "include",
@@ -250,25 +237,14 @@ export const createPilot = async (
     },
     body: pilotBody,
   });
-  const ret: PilotResponse = { data: undefined, error: undefined };
   if (response.ok) {
-    ret.data = (await response.json()) as Pilot;
+    return { ok: response.ok } as BackendResponse;
   } else {
-    ret.error = (await response.json()) as BackendError;
+    return { ok: response.ok, error: (await response.json()) as BackendError };
   }
-  return ret;
 };
 
-export interface User {
-  name: string;
-}
-
-export interface UserResponse {
-  data: User | undefined;
-  error: BackendError | undefined;
-}
-
-export const register = async (userBody: string): Promise<number> => {
+export const register = async (userBody: string): Promise<BackendResponse> => {
   const response = await fetch("http://localhost:4000/auth/register", {
     method: "POST",
     credentials: "include",
@@ -277,14 +253,11 @@ export const register = async (userBody: string): Promise<number> => {
     },
     body: userBody,
   });
-  return response.status;
-  // const ret: UserResponse = { data: undefined, error: undefined };
-  // if (response.ok) {
-  //   ret.data = (await response.json()) as User;
-  // } else {
-  //   ret.error = (await response.json()) as BackendError;
-  // }
-  // return ret;
+  if (response.ok) {
+    return { ok: response.ok } as BackendResponse;
+  } else {
+    return { ok: response.ok, error: (await response.json()) as BackendError };
+  }
 };
 
 export const login = async (userBody: string): Promise<boolean> => {
@@ -296,14 +269,6 @@ export const login = async (userBody: string): Promise<boolean> => {
     },
     body: userBody,
   });
-
-  // const ret: UserResponse = { data: undefined, error: undefined };
-  // if (response.ok) {
-  //   ret.data = (await response.json()) as User;
-  // } else {
-  //   ret.error = (await response.json()) as BackendError;
-  // }
-  // return ret;
   return response.ok;
 };
 
@@ -316,11 +281,4 @@ export const logout = async (): Promise<boolean> => {
     },
   });
   return response.ok;
-  // let ret: object | BackendError;
-  // if (response.ok) {
-  //   ret = (await response.json()) as object;
-  // } else {
-  //   ret = (await response.json()) as BackendError;
-  // }
-  // return ret;
 };

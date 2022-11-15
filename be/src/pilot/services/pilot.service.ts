@@ -40,9 +40,16 @@ export class PilotService {
     }
 
     if (ret.length === 0 && query) {
-      throw new NotFoundException();
+      throw new NotFoundException(
+        `no pilot that matches '${query}' in database.`,
+        {
+          description: `no match for query`,
+        },
+      );
     } else if (ret.length === 0 && !query) {
-      throw new NotFoundException();
+      throw new NotFoundException('no pilot in database.', {
+        description: 'no pilot in database',
+      });
     }
 
     return ret;
@@ -120,9 +127,12 @@ export class PilotService {
       name: teamName,
     });
     if (!teamFromDb) {
-      throw new NotFoundException(`no team with name of '${teamName}'`, {
-        description: `can't assign team to pilot if the team does'nt exist`,
-      });
+      throw new NotFoundException(
+        `can't assign pilot to team because, there is no team with name of '${teamName}'`,
+        {
+          description: `can't assign team to pilot if the team does'nt exist`,
+        },
+      );
     }
     return teamFromDb;
   }

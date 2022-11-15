@@ -1,7 +1,7 @@
 import { useState, useContext } from "react";
 import { UserContext } from "../App";
-import { Link, Navigate } from "react-router-dom";
-import { User, logout, BackendError } from "./utils";
+import { Navigate } from "react-router-dom";
+import { logout } from "./utils";
 
 export default function Logout() {
   const { userContext, setUserContext } = useContext(UserContext);
@@ -15,11 +15,6 @@ export default function Logout() {
     } else {
       // server error
     }
-    // if ((fetch as BackendError).reason) {
-    //   // server error
-    // } else {
-    //   setUserContext({ name: "", password: "" } as User);
-    // }
   };
 
   if (redirect) {

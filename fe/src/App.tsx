@@ -11,7 +11,7 @@ import CreatePilot from "./components/CreatePilot";
 import Register from "./components/Register";
 import Login from "./components/Login";
 import Welcome from "./components/Welcome";
-import { User } from "./components/utils";
+import { User } from "./components/types";
 
 export const UserContext = createContext({
   userContext: undefined as User | undefined,

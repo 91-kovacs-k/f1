@@ -1,10 +1,11 @@
 import { useContext, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { UserContext } from "../App";
-import { register, User } from "./utils";
+import { User } from "./types";
+import { register } from "./utils";
 
 export default function Register() {
-  const { userContext, setUserContext } = useContext(UserContext);
+  const { setUserContext } = useContext(UserContext);
   const [formData, setFormData] = useState({ name: "", password: "" });
   const [response, setResponse] = useState("");
   const [redirect, setRedirect] = useState(false);
@@ -32,16 +33,12 @@ export default function Register() {
     });
 
     const fetch = await register(body);
-    if (fetch === 409) {
-      setResponse(
-        `Error while creating account: '${formData.name}' already exists.`
-      );
-    } else if (fetch === 201) {
+    if (!fetch.ok) {
+      setResponse(`Error while creating account: ${fetch.error.message}`);
+    } else {
       setResponse(`Account successfully created. Redirecting...`);
       setUserContext({ name: formData.name } as User);
       setTimeout(() => setRedirect(true), 2000);
-    } else {
-      setResponse(`Error while creating account!`);
     }
   };
 
