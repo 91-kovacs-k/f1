@@ -9,6 +9,7 @@ import { User } from './typeorm/entities/User';
 import { UserModule } from './user/user.module';
 import * as dotenv from 'dotenv';
 import { AuthMiddleware } from './auth.middleware';
+import { PilotModule } from './pilot/pilot.module';
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ if (process.env.ENVIRONMENT === 'localhost') {
     }),
     UserModule,
     TeamModule,
+    PilotModule,
   ],
   controllers: [AppController],
   providers: [AppService],

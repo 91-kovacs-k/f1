@@ -23,13 +23,14 @@ export class AuthController {
   ): Promise<void> {
     const [valid, data] = this.checkAndConvertUserData(userData);
 
-    if (valid) {
-      session.user = await this.userService.insertUser(data as UserParams);
-      return;
+    if (!valid) {
+      throw new BadRequestException(`Insufficient arguments.`, {
+        description: `insufficient arguments`,
+      });
     }
-    throw new BadRequestException(`Insufficient arguments.`, {
-      description: `insufficient arguments`,
-    });
+
+    session.user = await this.userService.insertUser(data as UserParams);
+    return;
   }
 
   @Post('/login')

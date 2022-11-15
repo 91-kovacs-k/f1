@@ -7,6 +7,7 @@ import {
   Param,
   Query,
   Body,
+  BadRequestException,
 } from '@nestjs/common';
 import { TeamParams } from 'src/utils/types';
 import { TeamDataDto } from '../dtos/TeamData.dto';
@@ -39,9 +40,13 @@ export class TeamController {
     @Body() teamDetails: TeamDataDto,
   ) {
     const [valid, teamParams] = this.checkAndConvertTeamData(teamDetails);
-    if (valid) {
-      await this.teamService.modifyTeam(teamId, teamParams as TeamParams);
+    if (!valid) {
+      throw new BadRequestException(`Insufficient arguments.`, {
+        description: `insufficient arguments`,
+      });
     }
+
+    await this.teamService.modifyTeam(teamId, teamParams as TeamParams);
   }
 
   @Delete('/:id')

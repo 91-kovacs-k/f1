@@ -8,11 +8,14 @@ import { Repository, Like } from 'typeorm';
 import { Team } from 'src/typeorm/entities/Team';
 import { TeamParams } from 'src/utils/types';
 import { checkIfValidUUID } from 'src/utils/helper';
+import { Pilot } from 'src/typeorm/entities/Pilot';
 
 @Injectable()
 export class TeamService {
   constructor(
     @InjectRepository(Team) private readonly teamRepository: Repository<Team>,
+    @InjectRepository(Pilot)
+    private readonly pilotRepository: Repository<Pilot>,
   ) {}
 
   async findTeams(query?: string, limit: number = 0): Promise<Team[]> {
@@ -51,21 +54,17 @@ export class TeamService {
     throw new NotFoundException();
   }
 
-  async insertTeam(teamDetails: TeamParams): Promise<void> {
-    if (await this.teamRepository.findOneBy({ name: teamDetails.name })) {
+  async insertTeam(teamParams: TeamParams): Promise<void> {
+    if (await this.teamRepository.findOneBy({ name: teamParams.name })) {
       throw new ConflictException(
-        `team name '${teamDetails.name}' already exists.`,
+        `team name '${teamParams.name}' already exists.`,
         {
           description: `team already exists`,
         },
       );
     }
-    try {
-      const newTeam = await this.teamRepository.create({ ...teamDetails });
-      await this.teamRepository.save(newTeam);
-    } catch (error) {
-      throw error;
-    }
+    const newTeam = await this.teamRepository.create({ ...teamParams });
+    await this.teamRepository.save(newTeam);
     return;
   }
 
@@ -93,6 +92,11 @@ export class TeamService {
 
   async removeTeam(teamId: string) {
     const teamFromDb = await this.findTeamById(teamId);
-    this.teamRepository.remove(teamFromDb);
+    const pilotsWithTeam = await this.pilotRepository.find({
+      where: { team: teamFromDb },
+    });
+    pilotsWithTeam.forEach((pilot) => (pilot.team = null));
+    await this.pilotRepository.save(pilotsWithTeam);
+    await this.teamRepository.remove(teamFromDb);
   }
 }

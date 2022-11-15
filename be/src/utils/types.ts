@@ -6,3 +6,10 @@ export type UserParams = {
 export type TeamParams = {
   name: string;
 };
+
+export type PilotParams = {
+  name: string;
+  team?: {
+    name: string;
+  };
+};
