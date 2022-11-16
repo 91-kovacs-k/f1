@@ -3,13 +3,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TeamModule } from './team/team.module';
-import { Pilot } from './typeorm/entities/Pilot';
-import { Team } from './typeorm/entities/Team';
-import { User } from './typeorm/entities/User';
 import { UserModule } from './user/user.module';
 import * as dotenv from 'dotenv';
 import { AuthMiddleware } from './auth.middleware';
 import { PilotModule } from './pilot/pilot.module';
+import { entities } from './typeorm/entities';
 
 dotenv.config();
 
@@ -31,8 +29,9 @@ if (process.env.ENVIRONMENT === 'localhost') {
       database: 'F1',
       synchronize: true,
       logging: false,
-      entities: [User, Team, Pilot],
+      // entities: [User, Team, Pilot],
       // entities: ['/src/typeorm/entities/*.ts'],
+      entities: entities,
       migrations: [],
       subscribers: [],
       options: { encrypt: false },

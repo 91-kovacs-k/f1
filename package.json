@@ -4,7 +4,7 @@
   "description": "f1 exercise app",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "init": "cd .. && mkdir f1-data && cd f1-data && mkdir MSSQL && cd MSSQL && mkdir data log secrets",
+    "init": "cd .. && mkdir f1-data && cd f1-data && mkdir MSSQL && mkdir redis && cd MSSQL && mkdir data log secrets && cd .. && cd redis && mkdir data",
     "clear-init": "cd .. && rmdir /s f1-data",
     "clear-init-linux": "cd .. && rm -r --interactive=once f1-data",
     "start": "docker-compose up -d",

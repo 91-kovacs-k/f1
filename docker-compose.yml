@@ -31,7 +31,7 @@ services:
     container_name: f1-mssql
     build:
       context: ./data
-      dockerfile: Dockerfile
+      dockerfile: MSSQL-Dockerfile
     ports:
       - "1433:1433"
     volumes:
@@ -44,6 +44,20 @@ services:
     networks:
       - f1-net
 
+  redis:
+      image: 91kovacsk/f1-redis
+      container_name: f1-redis
+      build:
+        context: ./data
+        dockerfile: redis-Dockerfile
+      ports:
+        - '6379:6379'
+      command: redis-server --loglevel warning
+      volumes:
+        - ../f1-data/redis/data:/data
+      networks:
+        - f1-net
+      
 networks:
   f1-net:
     driver: bridge
