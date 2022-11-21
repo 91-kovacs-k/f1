@@ -14,7 +14,7 @@ import { PilotParams } from 'src/utils/types';
 import { PilotDataDto } from '../dtos/PilotData.dto';
 import { PilotService } from '../services/pilot.service';
 
-@Controller('/api/pilot')
+@Controller('/pilot')
 export class PilotController {
   constructor(private readonly pilotService: PilotService) {}
 

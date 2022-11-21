@@ -11,7 +11,7 @@ import { UserParams } from 'src/utils/types';
 import { UserDataDto } from '../dtos/UserData.dto';
 import { UserService } from '../services/user.service';
 
-@Controller('/api/user')
+@Controller('/user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

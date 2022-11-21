@@ -13,7 +13,7 @@ import { TeamParams } from 'src/utils/types';
 import { TeamDataDto } from '../dtos/TeamData.dto';
 import { TeamService } from '../services/team.service';
 
-@Controller('/api/team')
+@Controller('/team')
 export class TeamController {
   constructor(private readonly teamService: TeamService) {}
 
