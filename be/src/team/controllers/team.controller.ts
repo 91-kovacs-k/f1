@@ -7,62 +7,103 @@ import {
   Param,
   Query,
   Body,
-  BadRequestException,
+  ValidationPipe,
+  UsePipes,
+  ParseUUIDPipe,
+  NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
-import { TeamParams } from 'src/utils/types';
+import { Team } from 'src/typeorm';
+import { BackendError, ErrorType } from 'src/utils/error';
 import { TeamDataDto } from '../dtos/TeamData.dto';
+import { TeamQueryDto } from '../dtos/TeamQuery.dto';
 import { TeamService } from '../services/team.service';
 
+@UsePipes(ValidationPipe)
 @Controller('/team')
 export class TeamController {
   constructor(private readonly teamService: TeamService) {}
 
   @Get()
-  async getTeams(@Query() queryValues) {
-    const { name, limit } = queryValues;
-    return await this.teamService.findTeams(name, limit);
+  async getTeams(
+    @Query(
+      new ValidationPipe({
+        transform: true,
+        forbidNonWhitelisted: false,
+        whitelist: true,
+      }),
+    )
+    queryValues: TeamQueryDto,
+  ): Promise<Team[]> {
+    try {
+      return await this.teamService.findTeams(queryValues);
+    } catch (error) {
+      if ((error as BackendError).type === ErrorType.NotFound) {
+        throw new NotFoundException(
+          `no team that matches '${queryValues.name}' in database.`,
+        );
+      }
+
+      if ((error as BackendError).type === ErrorType.NoRecords) {
+        throw new NotFoundException('no team in database.');
+      }
+
+      throw error;
+    }
   }
 
   @Post()
-  async createTeam(@Body() createTeamDto: TeamDataDto) {
-    const { name } = createTeamDto;
-    await this.teamService.insertTeam({ name } as TeamParams);
+  async createTeam(@Body() teamDataDto: TeamDataDto): Promise<void> {
+    try {
+      await this.teamService.insertTeam(teamDataDto);
+    } catch (error) {
+      if ((error as BackendError).type === ErrorType.AlreadyExists) {
+        throw new ConflictException(
+          `team name '${teamDataDto.name}' already exists.`,
+        );
+      }
+      throw error;
+    }
   }
 
   @Get('/:id')
-  async getTeamById(@Param('id') teamId: string) {
-    return await this.teamService.findTeamById(teamId);
+  async getTeamById(@Param('id', ParseUUIDPipe) teamId: string) {
+    try {
+      return await this.teamService.findTeamById(teamId);
+    } catch (error) {
+      if ((error as BackendError).type === ErrorType.NotFound) {
+        throw new NotFoundException();
+      }
+      throw error;
+    }
   }
 
   @Patch('/:id')
   async updateTeam(
-    @Param('id') teamId: string,
-    @Body() teamDetails: TeamDataDto,
+    @Param('id', ParseUUIDPipe) teamId: string,
+    @Body() teamDataDto: TeamDataDto,
   ) {
-    const [valid, teamParams] = this.checkAndConvertTeamData(teamDetails);
-    if (!valid) {
-      throw new BadRequestException(`Insufficient arguments.`, {
-        description: `insufficient arguments`,
-      });
+    try {
+      await this.teamService.modifyTeam(teamId, teamDataDto);
+    } catch (error) {
+      if ((error as BackendError).type === ErrorType.AlreadyExists) {
+        throw new ConflictException(
+          `team name '${teamDataDto.name}' already exists.`,
+        );
+      }
+      throw error;
     }
-
-    await this.teamService.modifyTeam(teamId, teamParams as TeamParams);
   }
 
   @Delete('/:id')
-  async deleteTeam(@Param('id') teamId: string) {
-    return await this.teamService.removeTeam(teamId);
-  }
-
-  private checkAndConvertTeamData(
-    teamData: TeamDataDto,
-  ): [boolean, TeamDataDto | undefined] {
-    const name = teamData.name?.toString() || '';
-
-    if (name) {
-      return [true, { name } as TeamParams];
-    } else {
-      return [false, undefined];
+  async deleteTeam(@Param('id', ParseUUIDPipe) teamId: string) {
+    try {
+      return await this.teamService.removeTeam(teamId);
+    } catch (error) {
+      if ((error as BackendError).type === ErrorType.NotFound) {
+        throw new NotFoundException();
+      }
+      throw error;
     }
   }
 }

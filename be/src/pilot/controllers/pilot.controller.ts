@@ -4,14 +4,17 @@ import {
   Get,
   Post,
   Query,
-  BadRequestException,
   Patch,
   Param,
   Delete,
+  NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { Pilot } from 'src/typeorm/entities/Pilot';
-import { PilotParams } from 'src/utils/types';
+import { BackendError, ErrorType } from 'src/utils/error';
+import { ModifyPilotDataDto } from '../dtos/ModifyPilotData.dto';
 import { PilotDataDto } from '../dtos/PilotData.dto';
+import { PilotQueryDto } from '../dtos/PilotQuery.dto';
 import { PilotService } from '../services/pilot.service';
 
 @Controller('/pilot')
@@ -19,67 +22,88 @@ export class PilotController {
   constructor(private readonly pilotService: PilotService) {}
 
   @Get()
-  async getPilots(@Query() queryValues): Promise<Pilot[]> {
-    const { name, limit } = queryValues;
-    return await this.pilotService.findPilots(name, limit);
+  async getPilots(@Query() queryValues: PilotQueryDto): Promise<Pilot[]> {
+    try {
+      return await this.pilotService.findPilots(queryValues);
+    } catch (error) {
+      if ((error as BackendError).type === ErrorType.NotFound) {
+        throw new NotFoundException(
+          `no pilot that matches '${queryValues.name}' in database.`,
+        );
+      }
+
+      if ((error as BackendError).type === ErrorType.NoRecords) {
+        throw new NotFoundException('no pilot in database.');
+      }
+
+      throw error;
+    }
   }
 
   @Get('/:id')
-  async getPilot(@Param('id') pilotId: string): Promise<Pilot> {
-    return await this.pilotService.findPilotById(pilotId);
+  async getPilotById(@Param('id') pilotId: string): Promise<Pilot> {
+    try {
+      return await this.pilotService.findPilotById(pilotId);
+    } catch (error) {
+      if ((error as BackendError).type === ErrorType.NotFound) {
+        throw new NotFoundException();
+      }
+
+      throw error;
+    }
   }
 
   @Post()
-  async createPilot(@Body() pilotDetails: PilotDataDto): Promise<void> {
-    const [valid, data] = this.checkAndConvertPilotData(pilotDetails, true);
-    if (!valid) {
-      throw new BadRequestException(`Insufficient arguments.`, {
-        description: `insufficient arguments`,
-      });
-    }
+  async createPilot(@Body() pilotDataDto: PilotDataDto): Promise<void> {
+    try {
+      return await this.pilotService.insertPilot(pilotDataDto);
+    } catch (error) {
+      if ((error as BackendError).type === ErrorType.AlreadyExists) {
+        throw new ConflictException(
+          `pilot name '${pilotDataDto.name}' already exists.`,
+        );
+      }
 
-    await this.pilotService.insertPilot(data as PilotParams);
+      if ((error as BackendError).type === ErrorType.NotFound) {
+        throw new NotFoundException((error as BackendError).message);
+      }
+
+      throw error;
+    }
   }
 
   @Patch('/:id')
   async udpatePilot(
     @Param('id') pilotId: string,
-    @Body() pilotDetails: PilotDataDto,
+    @Body() pilotDataDto: ModifyPilotDataDto,
   ): Promise<void> {
-    const [valid, data] = this.checkAndConvertPilotData(pilotDetails);
+    try {
+      return await this.pilotService.modifyPilot(pilotId, pilotDataDto);
+    } catch (error) {
+      if ((error as BackendError).type === ErrorType.AlreadyExists) {
+        throw new ConflictException(
+          `pilot name '${pilotDataDto.name}' already exists.`,
+        );
+      }
 
-    if (!valid) {
-      throw new BadRequestException(`Insufficient arguments.`, {
-        description: `insufficient arguments`,
-      });
+      if ((error as BackendError).type === ErrorType.NotFound) {
+        throw new NotFoundException((error as BackendError).message);
+      }
+
+      throw error;
     }
-    await this.pilotService.modifyPilot(pilotId, data as PilotParams);
   }
 
   @Delete('/:id')
   async deletePilot(@Param('id') pilotId: string): Promise<void> {
-    await this.pilotService.removePilot(pilotId);
-  }
-
-  private checkAndConvertPilotData(
-    pilotData: PilotDataDto,
-    nameRequired?: boolean,
-  ): [boolean, PilotDataDto | undefined] {
-    const name = pilotData.name?.toString() || '';
-    const team = pilotData.team?.name ? pilotData.team : undefined;
-
-    if (nameRequired) {
-      if (name) {
-        return [true, { name, team } as PilotDataDto];
-      } else {
-        return [false, undefined];
+    try {
+      await this.pilotService.removePilot(pilotId);
+    } catch (error) {
+      if ((error as BackendError).type === ErrorType.NotFound) {
+        throw new NotFoundException();
       }
-    } else {
-      if (name || team) {
-        return [true, { name, team } as PilotDataDto];
-      } else {
-        return [false, undefined];
-      }
+
+      throw error;
     }
   }
 }

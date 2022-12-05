@@ -1,18 +1,14 @@
-import {
-  Module,
-  NestModule,
-  MiddlewareConsumer,
-  RequestMethod,
-} from '@nestjs/common';
+import * as dotenv from 'dotenv';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TeamModule } from './team/team.module';
 import { UserModule } from './user/user.module';
-import * as dotenv from 'dotenv';
-import { AuthMiddleware } from './auth.middleware';
 import { PilotModule } from './pilot/pilot.module';
-import { entities } from './typeorm/entities';
+import { entities } from './typeorm';
+import { PassportModule } from '@nestjs/passport';
+import { AuthModule } from './auth/auth.module';
 
 dotenv.config();
 
@@ -44,18 +40,10 @@ if (process.env.ENVIRONMENT === 'localhost') {
     UserModule,
     TeamModule,
     PilotModule,
+    PassportModule.register({ session: true }),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(AuthMiddleware)
-      .exclude(
-        { path: 'api/auth/login', method: RequestMethod.POST },
-        { path: 'api/auth/register', method: RequestMethod.POST },
-      )
-      .forRoutes('/');
-  }
-}
+export class AppModule {}

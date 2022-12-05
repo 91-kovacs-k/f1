@@ -1,19 +1,11 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/typeorm/entities/User';
-import { UserParams } from 'src/utils/types';
 import { UserDataDto } from '../dtos/UserData.dto';
-import {
-  checkIfValidUUID,
-  comparePasswords,
-  hashPassword,
-} from 'src/utils/helper';
+import { hashPassword } from 'src/utils/helper';
+import { BackendError, ErrorType } from 'src/utils/error';
+import { ModifyUserDataDto } from '../dtos/ModifyUserData.dto';
 
 @Injectable()
 export class UserService {
@@ -21,47 +13,28 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
-  async findUsers(query?: string, limit: number = 0): Promise<User[]> {
+  async findUserByUsername(username: string): Promise<User> {
+    return await this.userRepository.findOneBy({ username });
+  }
+
+  async findUsers(limit: number = 0): Promise<User[]> {
     let ret: User[] = [];
-    let items;
-    if (query) {
-      items = await this.userRepository.findBy({ username: query });
-    } else {
-      items = await this.userRepository.find();
-    }
+    ret = await this.userRepository.find();
 
     if (limit > 0) {
-      ret = items.slice(0, limit);
-    } else {
-      ret = items;
-    }
-
-    if (ret.length === 0 && query) {
-      throw new NotFoundException(
-        `no user that matches '${query}' in database.`,
-        {
-          description: `no match for query`,
-        },
-      );
-    } else if (ret.length === 0 && !query) {
-      throw new NotFoundException('no user in database.', {
-        description: 'no user in database',
-      });
+      ret = ret.slice(0, limit);
     }
 
     return ret;
   }
 
   async findUserById(userId: string): Promise<User> {
-    if (checkIfValidUUID(userId)) {
-      const userFromDb = await this.userRepository.findOneBy({ id: userId });
-      if (!userFromDb) {
-        throw new NotFoundException();
-      }
-
-      return userFromDb;
+    const userFromDb = await this.userRepository.findOneBy({ id: userId });
+    if (!userFromDb) {
+      throw new BackendError(ErrorType.NotFound);
     }
-    throw new NotFoundException();
+
+    return userFromDb;
   }
 
   async removeUser(userId: string): Promise<void> {
@@ -70,59 +43,38 @@ export class UserService {
     await this.userRepository.delete(userFromDb);
   }
 
-  async updateUser(userId: string, userData: UserDataDto): Promise<void> {
+  async updateUser(
+    userId: string,
+    userDataDto: ModifyUserDataDto,
+  ): Promise<void> {
     const userFromDb = await this.findUserById(userId);
 
-    if (userData.password) {
-      const hashedPassword = hashPassword(userData.password.toString());
-      userFromDb.password = hashedPassword;
-    }
-
-    if (userData.username) {
-      userFromDb.username = userData.username;
+    for (let property in userFromDb) {
+      if (userDataDto[property]) {
+        if (property === 'password') {
+          const hashedPassword = hashPassword(userDataDto.password.toString());
+          userFromDb[property] = hashedPassword;
+        } else {
+          userFromDb[property] = userDataDto[property];
+        }
+      }
     }
 
     this.userRepository.save(userFromDb);
   }
 
-  async insertUser(userDetails: UserParams): Promise<User> {
+  async insertUser(useDataDto: UserDataDto): Promise<void> {
     if (
-      await this.userRepository.findOneBy({ username: userDetails.username })
+      await this.userRepository.findOneBy({ username: useDataDto.username })
     ) {
-      throw new ConflictException(
-        `username '${userDetails.username}' already exists.`,
-        {
-          description: 'conflicting usernames',
-        },
-      );
+      throw new BackendError(ErrorType.AlreadyExists);
     }
 
-    const hashedPassword = hashPassword(userDetails.password);
+    const hashedPassword = hashPassword(useDataDto.password);
     const newUser = this.userRepository.create({
-      ...userDetails,
+      ...useDataDto,
       password: hashedPassword,
     });
-    return await this.userRepository.save(newUser);
-  }
-
-  async authenticateUser(userDetails: UserDataDto): Promise<User> {
-    const userFromDb = await this.userRepository.findOneBy({
-      username: userDetails.username,
-    });
-
-    if (!userFromDb) {
-      throw new UnauthorizedException();
-    }
-
-    if (!comparePasswords(userDetails.password, userFromDb.password)) {
-      throw new UnauthorizedException();
-    }
-
-    return userFromDb;
-  }
-
-  async logoutUser(userId: string): Promise<void> {
-    // TODO: delete session data from DB
-    // BLOCKER for this: need to store session data in DB first
+    await this.userRepository.save(newUser);
   }
 }

@@ -245,7 +245,7 @@ export const createPilot = async (
 };
 
 export const register = async (userBody: string): Promise<BackendResponse> => {
-  const response = await fetch("http://localhost:4000/auth/register", {
+  const response = await fetch("http://localhost:4000/api/auth/register", {
     method: "POST",
     credentials: "include",
     headers: {
@@ -261,19 +261,22 @@ export const register = async (userBody: string): Promise<BackendResponse> => {
 };
 
 export const login = async (userBody: string): Promise<boolean> => {
-  const response: Response = await fetch("http://localhost:4000/auth/login", {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: userBody,
-  });
+  const response: Response = await fetch(
+    "http://localhost:4000/api/auth/login",
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: userBody,
+    }
+  );
   return response.ok;
 };
 
 export const logout = async (): Promise<boolean> => {
-  const response = await fetch("http://localhost:4000/auth/logout", {
+  const response = await fetch("http://localhost:4000/api/auth/logout", {
     method: "GET",
     credentials: "include",
     headers: {

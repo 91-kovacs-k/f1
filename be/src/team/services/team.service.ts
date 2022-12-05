@@ -1,14 +1,11 @@
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
 import { Team } from 'src/typeorm/entities/Team';
-import { TeamParams } from 'src/utils/types';
-import { checkIfValidUUID } from 'src/utils/helper';
 import { Pilot } from 'src/typeorm/entities/Pilot';
+import { TeamQueryDto } from '../dtos/TeamQuery.dto';
+import { TeamDataDto } from '../dtos/TeamData.dto';
+import { BackendError, ErrorType } from 'src/utils/error';
 
 @Injectable()
 export class TeamService {
@@ -18,86 +15,66 @@ export class TeamService {
     private readonly pilotRepository: Repository<Pilot>,
   ) {}
 
-  async findTeams(query?: string, limit: number = 0): Promise<Team[]> {
+  async findTeams(query: TeamQueryDto): Promise<Team[]> {
     let ret: Team[] = [];
-    let items;
-    if (query) {
-      items = await this.teamRepository.findBy({ name: Like(`%${query}%`) });
-    } else {
-      items = await this.teamRepository.find();
-    }
 
-    if (limit > 0) {
-      ret = items.slice(0, limit);
-    } else {
-      ret = items;
-    }
-
-    if (ret.length === 0 && query) {
-      throw new NotFoundException(
-        `no team that matches '${query}' in database.`,
-        {
-          description: `no match for query`,
-        },
-      );
-    } else if (ret.length === 0 && !query) {
-      throw new NotFoundException('no team in database.', {
-        description: 'no team in database',
+    if (query.name) {
+      ret = await this.teamRepository.findBy({
+        name: Like(`%${query.name}%`),
       });
+    } else {
+      ret = await this.teamRepository.find();
+    }
+
+    if (query.limit && query.limit > 0) {
+      ret = ret.slice(0, query.limit);
+    }
+
+    if (ret.length === 0 && query.name) {
+      throw new BackendError(ErrorType.NotFound);
+    } else if (ret.length === 0 && !query.name) {
+      throw new BackendError(ErrorType.NoRecords);
     }
 
     return ret;
   }
 
   async findTeamById(teamId: string): Promise<Team> {
-    if (checkIfValidUUID(teamId)) {
-      const teamFromDb = await this.teamRepository.findOneBy({ id: teamId });
-      if (!teamFromDb) {
-        throw new NotFoundException();
-      }
-
-      return teamFromDb;
+    const teamFromDb = await this.teamRepository.findOneBy({ id: teamId });
+    if (!teamFromDb) {
+      throw new BackendError(ErrorType.NotFound);
     }
-    throw new NotFoundException();
+
+    return teamFromDb;
   }
 
-  async insertTeam(teamParams: TeamParams): Promise<void> {
-    if (await this.teamRepository.findOneBy({ name: teamParams.name })) {
-      throw new ConflictException(
-        `team name '${teamParams.name}' already exists.`,
-        {
-          description: `team already exists`,
-        },
-      );
+  async insertTeam(teamDataDto: TeamDataDto): Promise<void> {
+    if (await this.teamRepository.findOneBy({ name: teamDataDto.name })) {
+      throw new BackendError(ErrorType.AlreadyExists);
     }
-    const newTeam = await this.teamRepository.create({ ...teamParams });
+    const newTeam = this.teamRepository.create({ ...teamDataDto });
     await this.teamRepository.save(newTeam);
     return;
   }
 
-  async modifyTeam(teamId: string, teamDetails: TeamParams): Promise<void> {
+  async modifyTeam(teamId: string, teamDataDto: TeamDataDto): Promise<void> {
     const teamFromDb = await this.findTeamById(teamId);
 
-    if (teamDetails.name) {
+    if (teamDataDto.name) {
       const exists = await this.teamRepository.findOneBy({
-        name: teamDetails.name,
+        name: teamDataDto.name,
       });
 
       if (exists && exists.id !== teamFromDb.id) {
-        throw new ConflictException(
-          `team name '${teamDetails.name}' already exists.`,
-          {
-            description: `team already exists`,
-          },
-        );
+        throw new BackendError(ErrorType.AlreadyExists);
       }
-      teamFromDb.name = teamDetails.name;
+      teamFromDb.name = teamDataDto.name;
     }
 
     this.teamRepository.save(teamFromDb);
   }
 
-  async removeTeam(teamId: string) {
+  async removeTeam(teamId: string): Promise<void> {
     const teamFromDb = await this.findTeamById(teamId);
     const pilotsWithTeam = await this.pilotRepository.find({
       where: { team: teamFromDb },

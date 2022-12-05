@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 
 services:
 
@@ -43,20 +43,6 @@ services:
       - SA_PASSWORD=notPassword123
     networks:
       - f1-net
-
-  redis:
-      image: 91kovacsk/f1-redis
-      container_name: f1-redis
-      build:
-        context: ./data
-        dockerfile: redis-Dockerfile
-      ports:
-        - '6379:6379'
-      command: redis-server --loglevel warning
-      volumes:
-        - ../f1-data/redis/data:/data
-      networks:
-        - f1-net
       
 networks:
   f1-net:

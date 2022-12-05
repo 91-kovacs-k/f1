@@ -7,9 +7,10 @@ import {
 } from 'class-validator';
 import { TeamDataDto } from 'src/team/dtos/TeamData.dto';
 
-export class PilotDataDto {
+export class ModifyPilotDataDto {
+  @IsOptional()
   @IsNotEmpty()
-  name: string;
+  name?: string;
 
   @IsOptional()
   @IsNotEmpty()

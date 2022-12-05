@@ -1,14 +1,12 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Pilot } from 'src/typeorm/entities/Pilot';
 import { Team } from 'src/typeorm/entities/Team';
-import { checkIfValidUUID } from 'src/utils/helper';
-import { PilotParams } from 'src/utils/types';
+import { BackendError, ErrorType } from 'src/utils/error';
 import { Repository } from 'typeorm';
+import { ModifyPilotDataDto } from '../dtos/ModifyPilotData.dto';
+import { PilotDataDto } from '../dtos/PilotData.dto';
+import { PilotQueryDto } from '../dtos/PilotQuery.dto';
 
 @Injectable()
 export class PilotService {
@@ -19,96 +17,83 @@ export class PilotService {
     private readonly teamRepository: Repository<Team>,
   ) {}
 
-  async findPilots(query?: string, limit: number = 0): Promise<Pilot[]> {
+  async findPilots(query: PilotQueryDto): Promise<Pilot[]> {
     let ret: Pilot[] = [];
 
-    let items;
-    if (query) {
-      items = await this.pilotRepository
+    if (query.name) {
+      ret = await this.pilotRepository
         .createQueryBuilder('pilot')
         .leftJoinAndSelect('pilot.team', 'team')
         .where('pilot.name like :name', { name: `%${query}%` })
         .getMany();
     } else {
-      items = await this.pilotRepository.find({ relations: { team: true } });
+      ret = await this.pilotRepository.find({ relations: { team: true } });
     }
 
-    if (limit > 0) {
-      ret = items.slice(0, limit);
-    } else {
-      ret = items;
+    if (query.limit > 0) {
+      ret = ret.slice(0, query.limit);
     }
 
     if (ret.length === 0 && query) {
-      throw new NotFoundException(
-        `no pilot that matches '${query}' in database.`,
-        {
-          description: `no match for query`,
-        },
-      );
+      throw new BackendError(ErrorType.NotFound);
     } else if (ret.length === 0 && !query) {
-      throw new NotFoundException('no pilot in database.', {
-        description: 'no pilot in database',
-      });
+      throw new BackendError(ErrorType.NoRecords);
     }
 
     return ret;
   }
 
   async findPilotById(pilotId: string): Promise<Pilot> {
-    if (checkIfValidUUID(pilotId)) {
-      const pilotFromDb = await this.pilotRepository.findOneBy({ id: pilotId });
-      if (!pilotFromDb) {
-        throw new NotFoundException();
-      }
-
-      return pilotFromDb;
+    // const pilotFromDb = await this.pilotRepository.findOneBy({ id: pilotId });
+    const pilotFromDb = await this.pilotRepository
+      .createQueryBuilder('pilot')
+      .leftJoinAndSelect('pilot.team', 'team')
+      .where('pilot.id = :id', { id: `${pilotId}` })
+      .getOne();
+    if (!pilotFromDb) {
+      throw new BackendError(ErrorType.NotFound);
     }
-    throw new NotFoundException();
+
+    return pilotFromDb;
   }
 
-  async insertPilot(pilotParams: PilotParams): Promise<void> {
-    if (await this.pilotRepository.findOneBy({ name: pilotParams.name })) {
-      throw new ConflictException(
-        `pilot name '${pilotParams.name}' already exists.`,
-        {
-          description: `pilot already exists`,
-        },
+  async insertPilot(pilotDataDto: PilotDataDto): Promise<void> {
+    if (await this.pilotRepository.findOneBy({ name: pilotDataDto.name })) {
+      throw new BackendError(ErrorType.AlreadyExists);
+    }
+
+    if (pilotDataDto.team) {
+      pilotDataDto.team = await this.searchForTeamByName(
+        pilotDataDto.team.name,
       );
     }
 
-    if (pilotParams.team) {
-      pilotParams.team = await this.searchForTeamByName(pilotParams.team.name);
-    }
-
-    const newPilot = await this.pilotRepository.create({ ...pilotParams });
+    const newPilot = await this.pilotRepository.create({ ...pilotDataDto });
     await this.pilotRepository.save(newPilot);
     return;
   }
 
-  async modifyPilot(pilotId: string, pilotParams: PilotParams): Promise<void> {
+  async modifyPilot(
+    pilotId: string,
+    pilotDataDto: ModifyPilotDataDto,
+  ): Promise<void> {
     const pilotFromDb = await this.findPilotById(pilotId);
 
-    if (pilotParams.team) {
+    if (pilotDataDto.team) {
       const teamFromDb = (await this.searchForTeamByName(
-        pilotParams.team.name,
+        pilotDataDto.team.name,
       )) as Team;
       pilotFromDb.team = teamFromDb;
     }
 
-    if (pilotParams.name) {
+    if (pilotDataDto.name) {
       const exists = await this.pilotRepository.findOneBy({
-        name: pilotParams.name,
+        name: pilotDataDto.name,
       });
       if (exists && exists.id !== pilotFromDb.id) {
-        throw new ConflictException(
-          `pilot name '${pilotParams.name}' already exists.`,
-          {
-            description: `pilot already exists`,
-          },
-        );
+        throw new BackendError(ErrorType.AlreadyExists);
       }
-      pilotFromDb.name = pilotParams.name;
+      pilotFromDb.name = pilotDataDto.name;
     }
 
     await this.pilotRepository.save(pilotFromDb);
@@ -117,9 +102,7 @@ export class PilotService {
   async removePilot(pilotId: string): Promise<void> {
     const pilotFromDb = await this.findPilotById(pilotId);
 
-    if (pilotFromDb) {
-      await this.pilotRepository.remove(pilotFromDb);
-    }
+    await this.pilotRepository.remove(pilotFromDb);
   }
 
   private async searchForTeamByName(teamName: string): Promise<Team> {
@@ -127,11 +110,9 @@ export class PilotService {
       name: teamName,
     });
     if (!teamFromDb) {
-      throw new NotFoundException(
+      throw new BackendError(
+        ErrorType.NotFound,
         `can't assign pilot to team because, there is no team with name of '${teamName}'`,
-        {
-          description: `can't assign team to pilot if the team does'nt exist`,
-        },
       );
     }
     return teamFromDb;

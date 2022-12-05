@@ -5,10 +5,12 @@ import {
   Patch,
   Body,
   Param,
-  BadRequestException,
+  ParseUUIDPipe,
+  NotFoundException,
 } from '@nestjs/common';
-import { UserParams } from 'src/utils/types';
-import { UserDataDto } from '../dtos/UserData.dto';
+import { User } from 'src/typeorm';
+import { BackendError, ErrorType } from 'src/utils/error';
+import { ModifyUserDataDto } from '../dtos/ModifyUserData.dto';
 import { UserService } from '../services/user.service';
 
 @Controller('/user')
@@ -16,33 +18,50 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  async getUsers() {
-    return await this.userService.findUsers();
+  async getUsers(): Promise<User[]> {
+    const users = await this.userService.findUsers();
+    if (users.length === 0) {
+      throw new NotFoundException('no user in database.');
+    }
+    return users;
   }
 
   @Get('/:id')
-  async findUser(@Param('id') userId: string) {
-    return await this.userService.findUserById(userId);
+  async getUserById(@Param('id', ParseUUIDPipe) userId: string): Promise<User> {
+    try {
+      return await this.userService.findUserById(userId);
+    } catch (error) {
+      if ((error as BackendError).type === ErrorType.NotFound) {
+        throw new NotFoundException();
+      }
+      throw error;
+    }
   }
 
   @Delete('/:id')
-  async deleteUser(@Param('id') userId: string) {
-    return await this.userService.removeUser(userId);
+  async deleteUser(@Param('id', ParseUUIDPipe) userId: string): Promise<void> {
+    try {
+      return await this.userService.removeUser(userId);
+    } catch (error) {
+      if ((error as BackendError).type === ErrorType.NotFound) {
+        throw new NotFoundException();
+      }
+      throw error;
+    }
   }
 
   @Patch('/:id')
-  async updateUser(@Param('id') userId: string, @Body() userData: UserDataDto) {
-    const username = userData.username?.toString().trim() || '';
-    const password = userData.password?.toString().trim() || '';
-
-    if (!username && !password) {
-      throw new BadRequestException(`Insufficient arguments.`, {
-        description: `insufficient arguments`,
-      });
+  async updateUser(
+    @Param('id', ParseUUIDPipe) userId: string,
+    @Body() userData: ModifyUserDataDto,
+  ): Promise<void> {
+    try {
+      return await this.userService.updateUser(userId, userData);
+    } catch (error) {
+      if ((error as BackendError).type === ErrorType.NotFound) {
+        throw new NotFoundException();
+      }
+      throw error;
     }
-    return await this.userService.updateUser(userId, {
-      username,
-      password,
-    } as UserParams);
   }
 }

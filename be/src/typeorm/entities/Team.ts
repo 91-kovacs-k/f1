@@ -17,4 +17,7 @@ export class Team {
 
   @OneToMany(() => Pilot, (pilot) => pilot.id)
   pilots: Relation<Pilot[]>;
+
+  @Column({ default: new Date().toISOString().slice(0, 19).replace('T', ' ') })
+  createdAt: Date;
 }
