@@ -9,13 +9,14 @@ import {
   Delete,
   NotFoundException,
   ConflictException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { Pilot } from 'src/typeorm/entities/Pilot';
 import { BackendError, ErrorType } from 'src/utils/error';
-import { ModifyPilotDataDto } from '../dtos/ModifyPilotData.dto';
-import { PilotDataDto } from '../dtos/PilotData.dto';
-import { PilotQueryDto } from '../dtos/PilotQuery.dto';
-import { PilotService } from '../services/pilot.service';
+import { ModifyPilotDataDto } from '../../dtos/ModifyPilotData.dto';
+import { PilotDataDto } from '../../dtos/PilotData.dto';
+import { PilotQueryDto } from '../../dtos/PilotQuery.dto';
+import { PilotService } from '../../services/pilot/pilot.service';
 
 @Controller('/pilot')
 export class PilotController {
@@ -36,7 +37,7 @@ export class PilotController {
         throw new NotFoundException('no pilot in database.');
       }
 
-      throw error;
+      throw new InternalServerErrorException();
     }
   }
 
@@ -49,14 +50,14 @@ export class PilotController {
         throw new NotFoundException();
       }
 
-      throw error;
+      throw new InternalServerErrorException();
     }
   }
 
   @Post()
   async createPilot(@Body() pilotDataDto: PilotDataDto): Promise<void> {
     try {
-      return await this.pilotService.insertPilot(pilotDataDto);
+      await this.pilotService.insertPilot(pilotDataDto);
     } catch (error) {
       if ((error as BackendError).type === ErrorType.AlreadyExists) {
         throw new ConflictException(
@@ -68,17 +69,17 @@ export class PilotController {
         throw new NotFoundException((error as BackendError).message);
       }
 
-      throw error;
+      throw new InternalServerErrorException();
     }
   }
 
   @Patch('/:id')
-  async udpatePilot(
+  async updatePilot(
     @Param('id') pilotId: string,
     @Body() pilotDataDto: ModifyPilotDataDto,
   ): Promise<void> {
     try {
-      return await this.pilotService.modifyPilot(pilotId, pilotDataDto);
+      await this.pilotService.modifyPilot(pilotId, pilotDataDto);
     } catch (error) {
       if ((error as BackendError).type === ErrorType.AlreadyExists) {
         throw new ConflictException(
@@ -90,7 +91,7 @@ export class PilotController {
         throw new NotFoundException((error as BackendError).message);
       }
 
-      throw error;
+      throw new InternalServerErrorException();
     }
   }
 
@@ -103,7 +104,7 @@ export class PilotController {
         throw new NotFoundException();
       }
 
-      throw error;
+      throw new InternalServerErrorException();
     }
   }
 }

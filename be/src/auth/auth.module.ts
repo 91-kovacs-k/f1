@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from 'src/typeorm';
-import { UserService } from 'src/user/services/user.service';
-import { UserModule } from 'src/user/user.module';
+import { User } from '../typeorm';
+import { UserService } from '../user/services/user/user.service';
+import { UserModule } from '../user/user.module';
 import { AuthController } from './controllers/auth/auth.controller';
 import { AuthenticatedGuard } from './guards/authenticated/authenticated.guard';
 import { AuthService } from './services/auth/auth.service';

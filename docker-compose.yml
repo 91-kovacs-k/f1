@@ -14,6 +14,8 @@ services:
       - "4000:4000"
     networks:
       - f1-net
+    depends_on:
+      - mssql
 
   f1-fe:
     image: 91kovacsk/f1-fe
@@ -25,6 +27,8 @@ services:
       - "3000:3000"
     networks:
       - f1-net
+    depends_on:
+      - f1-be
 
   mssql:
     image: 91kovacsk/f1-mssql

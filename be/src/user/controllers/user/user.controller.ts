@@ -7,11 +7,13 @@ import {
   Param,
   ParseUUIDPipe,
   NotFoundException,
+  InternalServerErrorException,
+  ConflictException,
 } from '@nestjs/common';
 import { User } from 'src/typeorm';
 import { BackendError, ErrorType } from 'src/utils/error';
-import { ModifyUserDataDto } from '../dtos/ModifyUserData.dto';
-import { UserService } from '../services/user.service';
+import { ModifyUserDataDto } from '../../dtos/ModifyUserData.dto';
+import { UserService } from '../../services/user/user.service';
 
 @Controller('/user')
 export class UserController {
@@ -19,11 +21,15 @@ export class UserController {
 
   @Get()
   async getUsers(): Promise<User[]> {
-    const users = await this.userService.findUsers();
-    if (users.length === 0) {
-      throw new NotFoundException('no user in database.');
+    try {
+      return await this.userService.findUsers();
+    } catch (error) {
+      if ((error as BackendError).type === ErrorType.NoRecords) {
+        throw new NotFoundException(error.message);
+      }
+
+      throw new InternalServerErrorException();
     }
-    return users;
   }
 
   @Get('/:id')
@@ -60,6 +66,9 @@ export class UserController {
     } catch (error) {
       if ((error as BackendError).type === ErrorType.NotFound) {
         throw new NotFoundException();
+      }
+      if ((error as BackendError).type === ErrorType.AlreadyExists) {
+        throw new ConflictException(error.message);
       }
       throw error;
     }

@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Pilot } from 'src/typeorm/entities/Pilot';
-import { Team } from 'src/typeorm/entities/Team';
-import { BackendError, ErrorType } from 'src/utils/error';
-import { Repository } from 'typeorm';
-import { ModifyPilotDataDto } from '../dtos/ModifyPilotData.dto';
-import { PilotDataDto } from '../dtos/PilotData.dto';
-import { PilotQueryDto } from '../dtos/PilotQuery.dto';
+import { Pilot } from '../../../typeorm/entities/Pilot';
+import { Team } from '../../../typeorm/entities/Team';
+import { BackendError, ErrorType } from '../../../utils/error';
+import { Like, Repository } from 'typeorm';
+import { ModifyPilotDataDto } from '../../dtos/ModifyPilotData.dto';
+import { PilotDataDto } from '../../dtos/PilotData.dto';
+import { PilotQueryDto } from '../../dtos/PilotQuery.dto';
 
 @Injectable()
 export class PilotService {
@@ -21,11 +21,10 @@ export class PilotService {
     let ret: Pilot[] = [];
 
     if (query.name) {
-      ret = await this.pilotRepository
-        .createQueryBuilder('pilot')
-        .leftJoinAndSelect('pilot.team', 'team')
-        .where('pilot.name like :name', { name: `%${query}%` })
-        .getMany();
+      ret = await this.pilotRepository.find({
+        where: { name: Like(query.name) },
+        relations: { team: true },
+      });
     } else {
       ret = await this.pilotRepository.find({ relations: { team: true } });
     }
@@ -34,9 +33,9 @@ export class PilotService {
       ret = ret.slice(0, query.limit);
     }
 
-    if (ret.length === 0 && query) {
+    if (ret.length === 0 && query.name) {
       throw new BackendError(ErrorType.NotFound);
-    } else if (ret.length === 0 && !query) {
+    } else if (ret.length === 0 && !query.name) {
       throw new BackendError(ErrorType.NoRecords);
     }
 
@@ -44,12 +43,10 @@ export class PilotService {
   }
 
   async findPilotById(pilotId: string): Promise<Pilot> {
-    // const pilotFromDb = await this.pilotRepository.findOneBy({ id: pilotId });
-    const pilotFromDb = await this.pilotRepository
-      .createQueryBuilder('pilot')
-      .leftJoinAndSelect('pilot.team', 'team')
-      .where('pilot.id = :id', { id: `${pilotId}` })
-      .getOne();
+    const pilotFromDb = await this.pilotRepository.findOne({
+      where: { id: pilotId },
+      relations: { team: true },
+    });
     if (!pilotFromDb) {
       throw new BackendError(ErrorType.NotFound);
     }
@@ -68,7 +65,7 @@ export class PilotService {
       );
     }
 
-    const newPilot = await this.pilotRepository.create({ ...pilotDataDto });
+    const newPilot = this.pilotRepository.create({ ...pilotDataDto });
     await this.pilotRepository.save(newPilot);
     return;
   }
@@ -84,6 +81,9 @@ export class PilotService {
         pilotDataDto.team.name,
       )) as Team;
       pilotFromDb.team = teamFromDb;
+    } else if (pilotDataDto.team === null) {
+      // explicit null value for team -> Pilot's Team should set to null
+      pilotFromDb.team = null;
     }
 
     if (pilotDataDto.name) {

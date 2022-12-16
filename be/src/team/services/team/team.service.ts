@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
-import { Team } from 'src/typeorm/entities/Team';
-import { Pilot } from 'src/typeorm/entities/Pilot';
-import { TeamQueryDto } from '../dtos/TeamQuery.dto';
-import { TeamDataDto } from '../dtos/TeamData.dto';
-import { BackendError, ErrorType } from 'src/utils/error';
+import { Team } from '../../../typeorm/entities/Team';
+import { Pilot } from '../../../typeorm/entities/Pilot';
+import { TeamQueryDto } from '../../dtos/TeamQuery.dto';
+import { TeamDataDto } from '../../dtos/TeamData.dto';
+import { BackendError, ErrorType } from '../../../utils/error';
 
 @Injectable()
 export class TeamService {
@@ -54,7 +54,6 @@ export class TeamService {
     }
     const newTeam = this.teamRepository.create({ ...teamDataDto });
     await this.teamRepository.save(newTeam);
-    return;
   }
 
   async modifyTeam(teamId: string, teamDataDto: TeamDataDto): Promise<void> {
@@ -79,7 +78,9 @@ export class TeamService {
     const pilotsWithTeam = await this.pilotRepository.find({
       where: { team: teamFromDb },
     });
-    pilotsWithTeam.forEach((pilot) => (pilot.team = null));
+    if (pilotsWithTeam) {
+      pilotsWithTeam.forEach((pilot) => (pilot.team = null));
+    }
     await this.pilotRepository.save(pilotsWithTeam);
     await this.teamRepository.remove(teamFromDb);
   }

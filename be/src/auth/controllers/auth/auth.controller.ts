@@ -9,9 +9,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { Public } from 'src/auth/decorators/public.decorator';
-import { LocalAuthGuard } from 'src/auth/guards/local-auth/local-auth.guard';
-import { RegisterGuard } from 'src/auth/guards/register/register.guard';
+import { Public } from '../../../auth/decorators/public.decorator';
+import { LocalAuthGuard } from '../../../auth/guards/local-auth/local-auth.guard';
+import { RegisterGuard } from '../../../auth/guards/register/register.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -28,12 +28,11 @@ export class AuthController {
 
   @Get('/logout')
   async logout(@Req() req: Request, @Res() res: Response) {
-    req.logout((err) => {
+    req.logOut((err) => {
       if (err) {
         return res.sendStatus(HttpStatus.INTERNAL_SERVER_ERROR);
       }
-      // TODO: delete sessison information from REDIS. Currently storing session information in memory
-      return res.sendStatus(HttpStatus.OK);
     });
+    return res.sendStatus(HttpStatus.OK);
   }
 }

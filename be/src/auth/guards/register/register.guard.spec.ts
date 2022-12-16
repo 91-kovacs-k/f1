@@ -1,4 +1,4 @@
-import { UserService } from 'src/user/services/user.service';
+import { UserService } from '../../../user/services/user/user.service';
 import { RegisterGuard } from './register.guard';
 
 describe('RegisterGuard', () => {

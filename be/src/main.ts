@@ -8,7 +8,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { TypeormStore } from 'connect-typeorm';
 // import { getRepository } from 'typeorm';
 import { SessionEntity } from './typeorm';
-import { AppDataSource } from './typeorm/datasources/data-source';
+import AppDataSource from './typeorm/datasources/data-source';
 
 dotenv.config();
 
@@ -16,7 +16,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const PORT = process.env.PORT || 4000;
   // const sessionRepository = getRepository(SessionEntity);
-  const sessionRepository = AppDataSource.getRepository(SessionEntity);
+  await AppDataSource.init();
+  const sessionRepository =
+    AppDataSource.dataSource.getRepository(SessionEntity);
 
   app.use(
     cors({

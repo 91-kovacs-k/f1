@@ -12,12 +12,13 @@ import {
   ParseUUIDPipe,
   NotFoundException,
   ConflictException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { Team } from 'src/typeorm';
 import { BackendError, ErrorType } from 'src/utils/error';
-import { TeamDataDto } from '../dtos/TeamData.dto';
-import { TeamQueryDto } from '../dtos/TeamQuery.dto';
-import { TeamService } from '../services/team.service';
+import { TeamDataDto } from '../../dtos/TeamData.dto';
+import { TeamQueryDto } from '../../dtos/TeamQuery.dto';
+import { TeamService } from '../../services/team/team.service';
 
 @UsePipes(ValidationPipe)
 @Controller('/team')
@@ -48,7 +49,7 @@ export class TeamController {
         throw new NotFoundException('no team in database.');
       }
 
-      throw error;
+      throw new InternalServerErrorException();
     }
   }
 
@@ -62,7 +63,7 @@ export class TeamController {
           `team name '${teamDataDto.name}' already exists.`,
         );
       }
-      throw error;
+      throw new InternalServerErrorException();
     }
   }
 
@@ -74,7 +75,7 @@ export class TeamController {
       if ((error as BackendError).type === ErrorType.NotFound) {
         throw new NotFoundException();
       }
-      throw error;
+      throw new InternalServerErrorException();
     }
   }
 
@@ -86,24 +87,29 @@ export class TeamController {
     try {
       await this.teamService.modifyTeam(teamId, teamDataDto);
     } catch (error) {
+      if ((error as BackendError).type === ErrorType.NotFound) {
+        throw new NotFoundException();
+      }
+
       if ((error as BackendError).type === ErrorType.AlreadyExists) {
         throw new ConflictException(
           `team name '${teamDataDto.name}' already exists.`,
         );
       }
-      throw error;
+
+      throw new InternalServerErrorException();
     }
   }
 
   @Delete('/:id')
   async deleteTeam(@Param('id', ParseUUIDPipe) teamId: string) {
     try {
-      return await this.teamService.removeTeam(teamId);
+      await this.teamService.removeTeam(teamId);
     } catch (error) {
       if ((error as BackendError).type === ErrorType.NotFound) {
         throw new NotFoundException();
       }
-      throw error;
+      throw new InternalServerErrorException();
     }
   }
 }

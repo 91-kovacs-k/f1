@@ -6,7 +6,7 @@ import { AppService } from './app.service';
 import { TeamModule } from './team/team.module';
 import { UserModule } from './user/user.module';
 import { PilotModule } from './pilot/pilot.module';
-import { entities } from './typeorm';
+// import { entities } from './typeorm';
 import { PassportModule } from '@nestjs/passport';
 import { AuthModule } from './auth/auth.module';
 
@@ -19,6 +19,11 @@ if (process.env.ENVIRONMENT === 'localhost') {
   MSSQLHOST = process.env.NODE_DBHOST;
 }
 
+let DATABASE = 'F1';
+if (process.env.TESTING === 'true') {
+  DATABASE = 'F1_TEST';
+}
+
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -27,12 +32,13 @@ if (process.env.ENVIRONMENT === 'localhost') {
       port: 1433,
       username: 'SA',
       password: 'notPassword123',
-      database: 'F1',
+      database: DATABASE,
       synchronize: true,
       logging: false,
       // entities: [User, Team, Pilot],
       // entities: ['/src/typeorm/entities/*.ts'],
-      entities: entities,
+      // entities: entities,
+      autoLoadEntities: true,
       migrations: [],
       subscribers: [],
       options: { encrypt: false },

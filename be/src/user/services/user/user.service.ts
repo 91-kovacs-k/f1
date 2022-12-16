@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from 'src/typeorm/entities/User';
-import { UserDataDto } from '../dtos/UserData.dto';
-import { hashPassword } from 'src/utils/helper';
-import { BackendError, ErrorType } from 'src/utils/error';
-import { ModifyUserDataDto } from '../dtos/ModifyUserData.dto';
+import { User } from '../../../typeorm/entities/User';
+import { UserDataDto } from '../../dtos/UserData.dto';
+import { hashPassword } from '../../../utils/bcryptUtils';
+import { BackendError, ErrorType } from '../../../utils/error';
+import { ModifyUserDataDto } from '../../dtos/ModifyUserData.dto';
 
 @Injectable()
 export class UserService {
@@ -25,6 +25,10 @@ export class UserService {
       ret = ret.slice(0, limit);
     }
 
+    if (ret.length === 0) {
+      throw new BackendError(ErrorType.NoRecords, 'no users in database');
+    }
+
     return ret;
   }
 
@@ -40,7 +44,7 @@ export class UserService {
   async removeUser(userId: string): Promise<void> {
     const userFromDb = await this.findUserById(userId);
 
-    await this.userRepository.delete(userFromDb);
+    await this.userRepository.remove(userFromDb);
   }
 
   async updateUser(
@@ -54,25 +58,34 @@ export class UserService {
         if (property === 'password') {
           const hashedPassword = hashPassword(userDataDto.password.toString());
           userFromDb[property] = hashedPassword;
+        } else if (property === 'username') {
+          const exists = await this.findUserByUsername(userDataDto[property]);
+          if (exists && exists.id !== userFromDb.id) {
+            throw new BackendError(
+              ErrorType.AlreadyExists,
+              `there is already a user with username of ${userDataDto[property]}`,
+            );
+          }
         } else {
           userFromDb[property] = userDataDto[property];
         }
       }
     }
 
-    this.userRepository.save(userFromDb);
+    await this.userRepository.save(userFromDb);
   }
 
-  async insertUser(useDataDto: UserDataDto): Promise<void> {
-    if (
-      await this.userRepository.findOneBy({ username: useDataDto.username })
-    ) {
-      throw new BackendError(ErrorType.AlreadyExists);
+  async insertUser(userDataDto: UserDataDto): Promise<void> {
+    if (await this.findUserByUsername(userDataDto.username)) {
+      throw new BackendError(
+        ErrorType.AlreadyExists,
+        `there is already a user with username of ${userDataDto.username}`,
+      );
     }
 
-    const hashedPassword = hashPassword(useDataDto.password);
+    const hashedPassword = hashPassword(userDataDto.password);
     const newUser = this.userRepository.create({
-      ...useDataDto,
+      ...userDataDto,
       password: hashedPassword,
     });
     await this.userRepository.save(newUser);
