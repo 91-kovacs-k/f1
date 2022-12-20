@@ -32,7 +32,7 @@ async function bootstrap() {
         maxAge: 60 * 60 * 24 * 1000,
       },
       name: 'f1app',
-      secret: process.env.SESSION_SECRET,
+      secret: process.env.S_SEC,
       resave: false,
       saveUninitialized: false,
       store: new TypeormStore({

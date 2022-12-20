@@ -6,7 +6,8 @@ services:
     image: 91kovacsk/f1-be
     container_name: f1-be-cont
     environment:
-      - NODE_DBHOST=${NODE_DBHOST}
+      NODE_DBHOST: ${NODE_DBHOST}
+      S_SEC: ${S_SEC}
     build:
       context: ./be
       dockerfile: Dockerfile
@@ -15,7 +16,7 @@ services:
     networks:
       - f1-net
     depends_on:
-      - mssql
+      - sqledge
 
   f1-fe:
     image: 91kovacsk/f1-fe
@@ -30,21 +31,29 @@ services:
     depends_on:
       - f1-be
 
-  mssql:
-    image: 91kovacsk/f1-mssql
-    container_name: f1-mssql
-    build:
-      context: ./data
-      dockerfile: MSSQL-Dockerfile
+  sqledge:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    container_name: f1-sqledge
+    command: /opt/mssql/bin/sqlservr
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "notPassword123"
+    stdin_open: true
     ports:
       - "1433:1433"
     volumes:
-      - ../f1-data/MSSQL/data:/var/opt/mssql/data
-      - ../f1-data/MSSQL/log:/var/opt/mssql/log
-      - ../f1-data/MSSQL/secrets:/var/opt/mssql/secrets
-    environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=notPassword123
+      - ../f1-data/SQLEDGE/data:/var/opt/sqledge/data
+      - ../f1-data/SQLEDGE/log:/var/opt/sqledge/log
+      - ../f1-data/SQLEDGE/secrets:/var/opt/sqledge/secrets
+    networks:
+      - f1-net
+
+  sqlcmd:
+    image: mcr.microsoft.com/mssql-tools:latest
+    command: /opt/mssql_scripts/import-data.sh
+    stdin_open: true
+    volumes:
+      - ./data/mssql_scripts:/opt/mssql_scripts
     networks:
       - f1-net
       
